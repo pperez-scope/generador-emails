@@ -174,6 +174,11 @@
     <div class="lamp"></div>
   </header>
 
+  <div class="row" style="margin:-10px 0 22px;">
+    <button type="button" class="btn small" id="saveDraftBtn">💾 Guardar borrador</button>
+    <button type="button" class="btn small ghost" id="openHistorialBtn">🕘 Historial</button>
+  </div>
+
   <!-- CICLO Y CONTEXTO -->
   <section class="card">
     <h2>Contexto del concierto</h2>
@@ -217,12 +222,29 @@
       <input type="checkbox" id="unclearLayout">
       <label for="unclearLayout" style="margin:0;">Aún no tengo clara la distribución en el escenario (se lo preguntaré a ellos primero)</label>
     </div>
+    <div class="checkline">
+      <input type="checkbox" id="incluirManos">
+      <label for="incluirManos" style="margin:0;">Incluir frase sobre proyección de manos en pantalla (piano solo / clave solo)</label>
+    </div>
   </section>
 
   <!-- HORARIOS -->
   <section class="card">
     <h2>Plan de trabajo<small id="scheduleHint"></small></h2>
     <div id="scheduleFields"></div>
+    <div class="row" style="margin-top:6px;">
+      <div class="field">
+        <label>Coordinador/a de escenario (opcional)</label>
+        <input type="text" id="coord_nombre" placeholder="Nombre">
+      </div>
+      <div class="field" style="flex:0 0 170px;">
+        <label>&nbsp;</label>
+        <select id="coord_genero">
+          <option value="a">Coordinadora</option>
+          <option value="o">Coordinador</option>
+        </select>
+      </div>
+    </div>
     <div class="schedule-block" style="margin-top:18px;">
       <label style="font-weight:600;color:var(--text);margin-bottom:4px;display:block;">Horario detallado</label>
       <div style="color:var(--muted);font-size:0.8rem;margin-bottom:12px;">Pega el horario tal como te lo envíe el coordinador — se reformatea automáticamente a tu estilo. Revísalo antes de enviarlo. Añade un segundo día si el concierto lo requiere.</div>
@@ -263,20 +285,16 @@
     <textarea id="extraNotes" placeholder="Ej: confirmar si necesitan silla de descanso en escenario, mención específica al piano Steinway, etc."></textarea>
   </section>
 
-  <div class="field" style="margin: 24px 0;">
-    <label>Asunto del email</label>
-    <input type="text" id="subject">
-  </div>
-
   <button class="btn primary" id="generateBtn" style="width:100%; padding:13px; font-size:0.95rem;">Generar email</button>
 
   <!-- OUTPUT -->
   <section class="card" id="output-card">
     <h2>Email generado</h2>
     <div id="emailBody" contenteditable="true"></div>
-    <div class="output-hint">Puedes corregir el texto directamente aquí antes de copiarlo.</div>
+    <div class="output-hint">Puedes corregir el texto directamente aquí antes de copiarlo. Las imágenes van incluidas al final — copia todo con el botón de abajo.</div>
     <button class="btn primary" id="copyBtn">Copiar texto</button>
 
+    <div class="output-hint" id="attachRowHint" style="display:none;margin-top:16px;">Copia de seguridad, por si tu cliente de correo no conserva las imágenes al pegar:</div>
     <div class="attach-row" id="attachRow"></div>
   </section>
 
@@ -360,6 +378,18 @@ La eclosión modernista"></textarea>
   </div>
 </div>
 
+<!-- MODAL: historial de borradores -->
+<div class="modal-backdrop" id="historialModal">
+  <div class="modal">
+    <h3>Historial de borradores</h3>
+    <div class="output-hint" style="margin:-4px 0 12px;">Guarda el estado del formulario para retomarlo más tarde. Las imágenes (iluminación) no se guardan — tendrás que volver a subirlas.</div>
+    <div class="manage-list" id="historialList"></div>
+    <div style="text-align:right; margin-top:14px;">
+      <button class="btn small" id="closeHistorialBtn">Cerrar</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast">Copiado</div>
 
 <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
@@ -394,7 +424,7 @@ document.querySelectorAll('#langSeg button').forEach(b=>{
   b.addEventListener('click', ()=>{
     document.querySelectorAll('#langSeg button').forEach(x=>x.classList.remove('active'));
     b.classList.add('active'); state.lang = b.dataset.val;
-    renderScheduleFields(); updateSubjectPlaceholder();
+    renderScheduleFields();
   });
 });
 document.querySelectorAll('#typeSeg button').forEach(b=>{
@@ -526,7 +556,7 @@ function addObraRow(){
 
 /* ---------- HORARIOS DINÁMICOS POR CICLO ---------- */
 const cycleSelect = document.getElementById('cycle');
-cycleSelect.addEventListener('change', ()=>{ renderScheduleFields(); updateSubjectPlaceholder(); });
+cycleSelect.addEventListener('change', ()=>{ renderScheduleFields(); });
 
 function fieldHtml(id, label, type='text', extra=''){
   return `<div class="field"><label>${label}</label><input type="${type}" id="${id}" ${extra}></div>`;
@@ -538,10 +568,10 @@ function renderScheduleFields(){
   const hint = document.getElementById('scheduleHint');
 
   if(cycle === 'miercoles'){
-    hint.textContent = 'Hora de la prueba técnica de iluminación, para el párrafo introductorio.';
+    hint.textContent = 'Hora de la prueba técnica, para el párrafo introductorio.';
     box.innerHTML = `
       <div class="row">
-        ${fieldHtml('m_prueba_ini','Hora de la prueba técnica de iluminación')}
+        ${fieldHtml('m_prueba_ini','Hora de la prueba técnica')}
       </div>`;
   }
 
@@ -549,7 +579,7 @@ function renderScheduleFields(){
     hint.textContent = 'Hora de la prueba de sonido, para el párrafo introductorio.';
     box.innerHTML = `
       <div class="row">
-        ${fieldHtml('s_prueba','Hora habitual de prueba de sonido')}
+        ${fieldHtml('s_prueba','Hora habitual de la prueba técnica')}
         ${fieldHtml('s_prueba_adelantada','Hora si se adelanta por cambio de line-up (opcional)')}
       </div>`;
   }
@@ -575,8 +605,19 @@ function addDayBlock(){
   block.innerHTML = `
     <div class="row" style="align-items:flex-end;">
       <div class="field" style="flex:1;">
-        <label>Encabezado (fecha / sala)</label>
-        <input type="text" class="day-header" placeholder="Ej: Miércoles 22 de abril, Auditorio">
+        <label>Fecha</label>
+        <input type="date" class="day-date">
+      </div>
+      <div class="field" style="flex:1;">
+        <label>Sala</label>
+        <select class="day-venue">
+          <option value="auditorio">Auditorio</option>
+          <option value="otra">Otra (especificar)</option>
+        </select>
+      </div>
+      <div class="field day-venue-custom-field" style="flex:1;display:none;">
+        <label>Nombre de la sala</label>
+        <input type="text" class="day-venue-custom" placeholder="Ej: Salón azul">
       </div>
       <button type="button" class="btn small ghost day-del" style="flex:0 0 auto;">✕</button>
     </div>
@@ -587,6 +628,11 @@ function addDayBlock(){
 * 11:15  Liberación de espacio escénico"></textarea>
     </div>`;
   block.querySelector('.day-del').addEventListener('click', ()=> block.remove());
+  const venueSelect = block.querySelector('.day-venue');
+  const venueCustomField = block.querySelector('.day-venue-custom-field');
+  venueSelect.addEventListener('change', ()=>{
+    venueCustomField.style.display = venueSelect.value === 'otra' ? 'block' : 'none';
+  });
   dayBlocksBox.appendChild(block);
 }
 document.getElementById('addDayBtn').addEventListener('click', addDayBlock);
@@ -612,11 +658,33 @@ function normalizeScheduleLine(line){
   return desc ? `${time}${aprox}. ${desc}` : `${time}${aprox}.`;
 }
 
-function buildScheduleParagraphs(){
+/* Genera "Miércoles 22 de abril" / "Wednesday, April 22" a partir de un input type=date */
+function formatDayHeader(isoDate, lang){
+  if(!isoDate) return '';
+  const [y, m, d] = isoDate.split('-').map(Number);
+  const date = new Date(y, m - 1, d);
+  if(lang === 'es'){
+    let weekday = date.toLocaleDateString('es-ES', {weekday:'long'});
+    weekday = weekday.charAt(0).toUpperCase() + weekday.slice(1);
+    const month = date.toLocaleDateString('es-ES', {month:'long'});
+    return `${weekday} ${d} de ${month}`;
+  }
+  const weekday = date.toLocaleDateString('en-US', {weekday:'long'});
+  const month = date.toLocaleDateString('en-US', {month:'long'});
+  return `${weekday}, ${month} ${d}`;
+}
+
+function buildScheduleParagraphs(lang){
   const blocks = Array.from(document.querySelectorAll('.day-block'));
   const out = [];
   blocks.forEach(b=>{
-    const header = b.querySelector('.day-header').value.trim();
+    const iso = b.querySelector('.day-date').value;
+    const venueSelect = b.querySelector('.day-venue');
+    const venue = venueSelect.value === 'otra'
+      ? b.querySelector('.day-venue-custom').value.trim()
+      : (lang === 'es' ? 'Auditorio' : 'Auditorium');
+    const dayText = formatDayHeader(iso, lang);
+    const header = dayText ? (venue ? `${dayText}, ${venue}` : dayText) : '';
     const raw = b.querySelector('.day-raw').value;
     const lines = raw.split('\n').map(normalizeScheduleLine).filter(Boolean);
     if(!header && lines.length === 0) return;
@@ -627,22 +695,6 @@ function buildScheduleParagraphs(){
   });
   return out;
 }
-
-/* ---------- ASUNTO por defecto ---------- */
-const CYCLE_LABEL = {
-  miercoles: {es:'Ciclo de miércoles', en:'Wednesday concert'},
-  sabado: {es:'Concierto de sábado', en:'Saturday concert'},
-  jovenes: {es:'Jóvenes intérpretes', en:'Young performers'}
-};
-function updateSubjectPlaceholder(){
-  const cycle = cycleSelect.value;
-  const lang = state.lang;
-  const base = lang === 'es'
-    ? `${CYCLE_LABEL[cycle].es} — información técnica`
-    : `${CYCLE_LABEL[cycle].en} — technical information`;
-  document.getElementById('subject').value = base;
-}
-updateSubjectPlaceholder();
 
 /* ---------- TEXTOS ---------- */
 const T = {
@@ -671,9 +723,10 @@ const T = {
     closingDirect: `Quedo a vuestra disposición para lo que necesitéis en cuanto a iluminación, sonido o vídeo del evento.`,
     closingThird: `Quedo a su disposición para cualquier aspecto técnico relacionado con la iluminación, el sonido o el vídeo del evento.`,
     signoff: 'Saludos,',
-    testMiercoles: (t) => `El día del concierto, las pruebas técnicas de iluminación tendrán lugar a las ${t} junto con las pruebas de sonido de RNE. Al comienzo de las pruebas, el técnico mostrará la iluminación preparada con el fin de confirmar si es agradable y suficiente para la lectura de partituras y textos. Después necesitamos unos minutos de ensayo musical y lecturas para preparar la toma microfónica para grabación y retransmisión.`,
-    testSabadoDirect: (t, early) => `El día del concierto, las pruebas de sonido tendrán lugar habitualmente a las ${t}${early ? `, aunque si hay cambios en el reparto de intérpretes sería recomendable adelantarlas a las ${early}` : ''}. Al comienzo de las pruebas, el técnico os mostrará la iluminación preparada para confirmar que os resulta cómoda y que es suficiente para la lectura de partituras. Después necesitaremos unos minutos de ensayo musical para preparar la toma microfónica para grabación y retransmisión.`,
-    testSabadoThird: (t, early) => `El día del concierto, las pruebas de sonido tendrán lugar habitualmente a las ${t}${early ? `, aunque si hay cambios en el reparto de intérpretes sería recomendable adelantarlas a las ${early}` : ''}. Al comienzo de las pruebas, el técnico mostrará a los intérpretes la iluminación preparada para confirmar que resulta cómoda y suficiente para la lectura de partituras. Después necesitaremos unos minutos de ensayo musical para preparar la toma microfónica para grabación y retransmisión.`,
+    testMiercolesDirect: (t) => `El día del concierto, las pruebas técnicas tendrán lugar a las ${t} junto con las pruebas de sonido de RNE. Al comienzo de las pruebas, el técnico os mostrará la iluminación preparada con el fin de confirmar si os resulta agradable y suficiente para la lectura de partituras y textos. Después necesitamos unos minutos de ensayo musical y lecturas para preparar la toma microfónica para grabación y retransmisión.`,
+    testMiercolesThird: (t) => `El día del concierto, las pruebas técnicas tendrán lugar a las ${t} junto con las pruebas de sonido de RNE. Al comienzo de las pruebas, el técnico mostrará a los intérpretes la iluminación preparada con el fin de confirmar si les resulta agradable y suficiente para la lectura de partituras y textos. Después necesitaremos unos minutos de ensayo musical y lecturas para preparar la toma microfónica para grabación y retransmisión.`,
+    testSabadoDirect: (t, early) => `El día del concierto, la prueba técnica tendrá lugar habitualmente a las ${t}${early ? `, aunque si hay cambios en el reparto de intérpretes sería recomendable adelantarla a las ${early}` : ''}. Al comienzo de la prueba, el técnico os mostrará la iluminación preparada para confirmar que os resulta cómoda y que es suficiente para la lectura de partituras. Después necesitaremos unos minutos de ensayo musical para preparar la toma microfónica para grabación y retransmisión.`,
+    testSabadoThird: (t, early) => `El día del concierto, la prueba técnica tendrá lugar habitualmente a las ${t}${early ? `, aunque si hay cambios en el reparto de intérpretes sería recomendable adelantarla a las ${early}` : ''}. Al comienzo de la prueba, el técnico mostrará a los intérpretes la iluminación preparada para confirmar que les resulta cómoda y suficiente para la lectura de partituras. Después necesitaremos unos minutos de ensayo musical para preparar la toma microfónica para grabación y retransmisión.`,
     testJovenes: (d1, t1, d2) => `Las pruebas técnicas tendrán lugar el ${d1}, día del primer concierto, a las ${t1}. El ${d2} no se realizarán pruebas técnicas. Al comienzo de las pruebas, el técnico os mostrará la iluminación preparada con el fin de confirmar si os encontráis cómodos con la misma y si es suficiente para la lectura de partituras. Después necesitamos unos minutos de ensayo musical para preparar la toma microfónica para grabación y retransmisión.`,
     testJovenesThird: (d1, t1, d2) => `Las pruebas técnicas tendrán lugar el ${d1}, día del primer concierto, a las ${t1}. El ${d2} no se realizarán pruebas técnicas. Al comienzo de las pruebas, el técnico mostrará a los intérpretes la iluminación preparada con el fin de confirmar si resulta cómoda y suficiente para la lectura de partituras. Después necesitaremos unos minutos de ensayo musical para preparar la toma microfónica para grabación y retransmisión.`,
   },
@@ -702,9 +755,10 @@ const T = {
     closingDirect: `I am at your disposal for anything you need regarding lighting, sound, or video for the event.`,
     closingThird: `I am at your disposal for anything you need regarding lighting, sound, or video for the event.`,
     signoff: 'Best regards,',
-    testMiercoles: (t) => `On the day of the concert, the lighting technical rehearsals will take place at ${t} alongside RNE's sound checks. At the start of the tests, the technical staff will show the performers the lighting setup to confirm that it is suitable and provides adequate lighting for reading sheet music. Afterward, we will need a few minutes of musical rehearsal to prepare the microphone setup for recording and broadcast.`,
-    testSabadoDirect: (t, early) => `On the day of the concert, sound checks usually take place at ${t}${early ? `, but if there are any changes to the line-up, it would be advisable to bring it forward to ${early}` : ''}. At the start of the rehearsals, the technician will show you the lighting setup to ensure it is comfortable for the performers and provides sufficient light for reading sheet music. Afterwards, we will need a few minutes of musical rehearsal to prepare the microphone for recording and broadcasting.`,
-    testSabadoThird: (t, early) => `On the day of the concert, sound checks usually take place at ${t}${early ? `, but if there are any changes to the line-up, it would be advisable to bring it forward to ${early}` : ''}. At the start of the rehearsals, the technician will show the performers the lighting setup to ensure it is comfortable and provides sufficient light for reading sheet music. Afterwards, we will need a few minutes of musical rehearsal to prepare the microphone for recording and broadcasting.`,
+    testMiercolesDirect: (t) => `On the day of the concert, the technical rehearsal will take place at ${t} alongside RNE's sound checks. At the start of the tests, the technical staff will show you the lighting setup to confirm that it is suitable and provides adequate lighting for reading sheet music. Afterward, we will need a few minutes of musical rehearsal to prepare the microphone setup for recording and broadcast.`,
+    testMiercolesThird: (t) => `On the day of the concert, the technical rehearsal will take place at ${t} alongside RNE's sound checks. At the start of the tests, the technical staff will show the performers the lighting setup to confirm that it is suitable and provides adequate lighting for reading sheet music. Afterward, we will need a few minutes of musical rehearsal to prepare the microphone setup for recording and broadcast.`,
+    testSabadoDirect: (t, early) => `On the day of the concert, the technical rehearsal usually takes place at ${t}${early ? `, but if there are any changes to the line-up, it would be advisable to bring it forward to ${early}` : ''}. At the start of the rehearsal, the technician will show you the lighting setup to ensure it is comfortable for you and provides sufficient light for reading sheet music. Afterwards, we will need a few minutes of musical rehearsal to prepare the microphone for recording and broadcasting.`,
+    testSabadoThird: (t, early) => `On the day of the concert, the technical rehearsal usually takes place at ${t}${early ? `, but if there are any changes to the line-up, it would be advisable to bring it forward to ${early}` : ''}. At the start of the rehearsal, the technician will show the performers the lighting setup to ensure it is comfortable for them and provides sufficient light for reading sheet music. Afterwards, we will need a few minutes of musical rehearsal to prepare the microphone for recording and broadcasting.`,
     testJovenes: (d1, t1, d2) => `The technical rehearsal will take place on ${d1}, the day of the first concert, at ${t1}. There will be no technical rehearsal on ${d2}. At the start of the rehearsal, the technician will show you the lighting setup to confirm that you are comfortable with it and that it is sufficient for reading sheet music. Afterward, we will need a few minutes of musical rehearsal to prepare the microphone setup for recording and broadcast.`,
     testJovenesThird: (d1, t1, d2) => `The technical rehearsal will take place on ${d1}, the day of the first concert, at ${t1}. There will be no technical rehearsal on ${d2}. At the start of the rehearsal, the technician will show the performers the lighting setup to confirm that they are comfortable with it and that it is sufficient for reading sheet music. Afterward, we will need a few minutes of musical rehearsal to prepare the microphone setup for recording and broadcast.`,
   }
@@ -712,6 +766,32 @@ const T = {
 
 /* ---------- CONSTRUCCIÓN DEL EMAIL ---------- */
 function val(id){ const el = document.getElementById(id); return el ? el.value.trim() : ''; }
+
+function buildCoordinadorSentence(lang, direct){
+  const name = val('coord_nombre');
+  if(!name) return '';
+  const genero = val('coord_genero');
+  if(lang === 'es'){
+    const rol = genero === 'o' ? 'Nuestro coordinador de escenario' : 'Nuestra coordinadora de escenario';
+    return direct
+      ? ` ${rol}, ${name} (en copia), os acompañará y guiará la prueba para que todo quede listo antes del concierto.`
+      : ` ${rol}, ${name} (en copia), acompañará y guiará la prueba junto a los intérpretes para que todo quede listo antes del concierto.`;
+  }
+  return direct
+    ? ` Our stage coordinator, ${name} (in copy), will accompany and guide you through the rehearsal to make sure everything is ready before the concert.`
+    : ` Our stage coordinator, ${name} (in copy), will accompany and guide the performers through the rehearsal to make sure everything is ready before the concert.`;
+}
+
+function buildManosSentence(lang, direct){
+  if(lang === 'es'){
+    return direct
+      ? `Aprovecho para informaros de que en los conciertos de piano de la Fundación mostramos al público del auditorio las manos del intérprete proyectándolas en la pantalla. Hemos comprobado que esto mejora la experiencia para el público y no perturba en ningún momento la concentración de los intérpretes.`
+      : `Aprovecho para informarles de que en los conciertos de piano de la Fundación mostramos al público del auditorio las manos del intérprete proyectándolas en la pantalla. Hemos comprobado que esto mejora la experiencia para el público y no perturba en ningún momento la concentración de los intérpretes.`;
+  }
+  return direct
+    ? `I'd also like to let you know that in the Fundación's piano concerts, we project the performer's hands onto the screen for the audience in the auditorium. We've found that this enhances the audience's experience without ever disturbing the performers' concentration.`
+    : `I'd also like to let them know that in the Fundación's piano concerts, we project the performer's hands onto the screen for the audience in the auditorium. We've found that this enhances the audience's experience without ever disturbing the performers' concentration.`;
+}
 
 function buildEmail(){
   const lang = state.lang;
@@ -730,18 +810,21 @@ function buildEmail(){
 
   // --- Pruebas técnicas ---
   paras.push(`${t.headingTest}`);
+  let testParagraph = '';
   if(cycle === 'miercoles'){
-    paras.push(t.testMiercoles(val('m_prueba_ini')));
+    testParagraph = (direct ? t.testMiercolesDirect : t.testMiercolesThird)(val('m_prueba_ini'));
   } else if(cycle === 'sabado'){
     const fn = direct ? t.testSabadoDirect : t.testSabadoThird;
-    paras.push(fn(val('s_prueba'), val('s_prueba_adelantada')));
+    testParagraph = fn(val('s_prueba'), val('s_prueba_adelantada'));
   } else if(cycle === 'jovenes'){
     const fn = direct ? t.testJovenes : t.testJovenesThird;
-    paras.push(fn(val('j1_date'), val('j1_prueba'), val('j2_date')));
+    testParagraph = fn(val('j1_date'), val('j1_prueba'), val('j2_date'));
   }
+  testParagraph += buildCoordinadorSentence(lang, direct);
+  paras.push(testParagraph);
 
   // --- Horario ---
-  const scheduleParas = buildScheduleParagraphs();
+  const scheduleParas = buildScheduleParagraphs(lang);
   if(scheduleParas.length){
     paras.push(t.headingSchedule);
     scheduleParas.forEach(p => paras.push(p));
@@ -757,6 +840,9 @@ function buildEmail(){
     paras.push(fn(formacionName.toLowerCase()));
   }
   paras.push(direct ? t.furnitureDirect : t.furnitureThird);
+  if(document.getElementById('incluirManos').checked){
+    paras.push(buildManosSentence(lang, direct));
+  }
 
   // --- Programa / movimientos ---
   paras.push(t.headingMovements);
@@ -799,23 +885,29 @@ function markedTextToHtml(text){
 /* ---------- GENERAR ---------- */
 document.getElementById('generateBtn').addEventListener('click', ()=>{
   const body = buildEmail();
-  document.getElementById('emailBody').innerHTML = markedTextToHtml(body);
-  document.getElementById('output-card').classList.add('show');
+  let html = markedTextToHtml(body);
 
   const attachRow = document.getElementById('attachRow');
   attachRow.innerHTML = '';
   const unclearLayout = document.getElementById('unclearLayout').checked;
 
   if(!unclearLayout){
+    const planoImg = formaciones[formacionSelect.value];
+    let imagesHtml = '';
     if(lightingCurrentDataUrl){
+      imagesHtml += `<br><br><img src="${lightingCurrentDataUrl}" style="max-width:420px;width:100%;display:block;">`;
       attachRow.appendChild(makeAttachCard(lightingCurrentDataUrl, state.lang==='es' ? 'Iluminación' : 'Lighting', 'iluminacion.png'));
     }
-    const planoImg = formaciones[formacionSelect.value];
     if(planoImg){
+      imagesHtml += `<br><br><img src="${planoImg}" style="max-width:420px;width:100%;display:block;">`;
       attachRow.appendChild(makeAttachCard(planoImg, state.lang==='es' ? 'Plano de escenario' : 'Stage plan', 'plano.png'));
     }
+    html += imagesHtml;
   }
 
+  document.getElementById('attachRowHint').style.display = attachRow.children.length ? 'block' : 'none';
+  document.getElementById('emailBody').innerHTML = html;
+  document.getElementById('output-card').classList.add('show');
   document.getElementById('output-card').scrollIntoView({behavior:'smooth', block:'start'});
 });
 
@@ -852,6 +944,179 @@ document.getElementById('copyBtn').addEventListener('click', async ()=>{
     toast.classList.add('show');
     setTimeout(()=> toast.classList.remove('show'), 1600);
   }
+});
+
+/* =========================================================
+   HISTORIAL DE BORRADORES (solo email)
+   ========================================================= */
+const LS_HISTORIAL = 'et_historial_v1';
+const HISTORIAL_MAX = 20;
+
+function loadHistorial(){
+  try{ return JSON.parse(localStorage.getItem(LS_HISTORIAL) || '[]'); }
+  catch(err){ return []; }
+}
+function saveHistorial(list){ localStorage.setItem(LS_HISTORIAL, JSON.stringify(list)); }
+
+function getFormSnapshot(){
+  const dayBlocks = Array.from(document.querySelectorAll('.day-block')).map(b=>({
+    date: b.querySelector('.day-date').value,
+    venue: b.querySelector('.day-venue').value,
+    venueCustom: b.querySelector('.day-venue-custom').value,
+    raw: b.querySelector('.day-raw').value
+  }));
+  const programRows = Array.from(document.querySelectorAll('#programList .obra-meta')).map(r=>({
+    title: r.querySelector('.obra-title').value,
+    performers: r.querySelector('.obra-performers').value
+  }));
+  return {
+    cycle: cycleSelect.value,
+    lang: state.lang,
+    type: state.type,
+    names: val('names'),
+    formacion: formacionSelect.value,
+    unclearLayout: document.getElementById('unclearLayout').checked,
+    m_prueba_ini: val('m_prueba_ini'),
+    s_prueba: val('s_prueba'),
+    s_prueba_adelantada: val('s_prueba_adelantada'),
+    j1_date: val('j1_date'),
+    j1_prueba: val('j1_prueba'),
+    j2_date: val('j2_date'),
+    dayBlocks,
+    includeProgram: document.getElementById('includeProgram').checked,
+    programRows,
+    extraNotes: val('extraNotes'),
+    coordNombre: val('coord_nombre'),
+    coordGenero: val('coord_genero'),
+    incluirManos: document.getElementById('incluirManos').checked
+  };
+}
+
+function applyFormSnapshot(s){
+  // ciclo
+  cycleSelect.value = s.cycle || 'miercoles';
+  renderScheduleFields();
+  renderEscaletaPreBlock();
+
+  // idioma
+  document.querySelectorAll('#langSeg button').forEach(b=>{
+    b.classList.toggle('active', b.dataset.val === (s.lang || 'es'));
+  });
+  state.lang = s.lang || 'es';
+
+  // destinatario
+  document.querySelectorAll('#typeSeg button').forEach(b=>{
+    b.classList.toggle('active', b.dataset.val === (s.type || 'interprete'));
+  });
+  state.type = s.type || 'interprete';
+
+  document.getElementById('names').value = s.names || '';
+  if(s.formacion) formacionSelect.value = s.formacion;
+  renderPlanoPreview();
+
+  document.getElementById('unclearLayout').checked = !!s.unclearLayout;
+  document.getElementById('unclearLayout').dispatchEvent(new Event('change'));
+
+  const setIfExists = (id, v)=>{ const el = document.getElementById(id); if(el) el.value = v || ''; };
+  setIfExists('m_prueba_ini', s.m_prueba_ini);
+  setIfExists('s_prueba', s.s_prueba);
+  setIfExists('s_prueba_adelantada', s.s_prueba_adelantada);
+  setIfExists('j1_date', s.j1_date);
+  setIfExists('j1_prueba', s.j1_prueba);
+  setIfExists('j2_date', s.j2_date);
+
+  // bloques de día
+  dayBlocksBox.innerHTML = '';
+  (s.dayBlocks && s.dayBlocks.length ? s.dayBlocks : [{}]).forEach(db=>{
+    addDayBlock();
+    const block = dayBlocksBox.lastElementChild;
+    block.querySelector('.day-date').value = db.date || '';
+    block.querySelector('.day-venue').value = db.venue || 'auditorio';
+    block.querySelector('.day-venue-custom').value = db.venueCustom || '';
+    block.querySelector('.day-venue-custom-field').style.display = db.venue === 'otra' ? 'block' : 'none';
+    block.querySelector('.day-raw').value = db.raw || '';
+  });
+
+  // programa
+  document.getElementById('includeProgram').checked = !!s.includeProgram;
+  document.getElementById('programRows').style.display = s.includeProgram ? 'block' : 'none';
+  const programList = document.getElementById('programList');
+  programList.innerHTML = '';
+  (s.programRows || []).forEach(pr=>{
+    addObraRow();
+    const row = programList.lastElementChild;
+    row.querySelector('.obra-title').value = pr.title || '';
+    row.querySelector('.obra-performers').value = pr.performers || '';
+  });
+
+  document.getElementById('extraNotes').value = s.extraNotes || '';
+  document.getElementById('coord_nombre').value = s.coordNombre || '';
+  document.getElementById('coord_genero').value = s.coordGenero || 'a';
+  document.getElementById('incluirManos').checked = !!s.incluirManos;
+}
+
+function historialLabel(s){
+  const cycleNames = {miercoles:'Miércoles', sabado:'Sábado', jovenes:'Jóvenes intérpretes'};
+  const parts = [cycleNames[s.cycle] || s.cycle];
+  if(s.names) parts.push(s.names);
+  return parts.join(' — ');
+}
+
+function renderHistorialList(){
+  const list = document.getElementById('historialList');
+  const items = loadHistorial();
+  if(!items.length){
+    list.innerHTML = `<div class="output-hint" style="margin:8px 0;">Todavía no has guardado ningún borrador.</div>`;
+    return;
+  }
+  list.innerHTML = '';
+  items.forEach(entry=>{
+    const row = document.createElement('div');
+    row.className = 'manage-item';
+    const fecha = new Date(entry.savedAt).toLocaleString('es-ES', {dateStyle:'short', timeStyle:'short'});
+    row.innerHTML = `
+      <div class="name">${historialLabel(entry.data)}<br><span style="color:var(--muted);font-size:0.75rem;">${fecha}</span></div>
+      <button class="btn small" data-load="${entry.id}">Cargar</button>
+      <button class="btn small ghost" data-del="${entry.id}">Eliminar</button>`;
+    list.appendChild(row);
+  });
+  list.querySelectorAll('[data-load]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const items2 = loadHistorial();
+      const entry = items2.find(e => e.id === btn.dataset.load);
+      if(entry){
+        applyFormSnapshot(entry.data);
+        document.getElementById('historialModal').classList.remove('show');
+      }
+    });
+  });
+  list.querySelectorAll('[data-del]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const items2 = loadHistorial().filter(e => e.id !== btn.dataset.del);
+      saveHistorial(items2);
+      renderHistorialList();
+    });
+  });
+}
+
+document.getElementById('saveDraftBtn').addEventListener('click', ()=>{
+  const items = loadHistorial();
+  const entry = { id: 'h' + Date.now(), savedAt: Date.now(), data: getFormSnapshot() };
+  items.unshift(entry);
+  while(items.length > HISTORIAL_MAX) items.pop();
+  saveHistorial(items);
+  const toast = document.getElementById('toast');
+  toast.textContent = 'Borrador guardado';
+  toast.classList.add('show');
+  setTimeout(()=>{ toast.classList.remove('show'); toast.textContent = 'Copiado'; }, 1600);
+});
+
+document.getElementById('openHistorialBtn').addEventListener('click', ()=>{
+  renderHistorialList();
+  document.getElementById('historialModal').classList.add('show');
+});
+document.getElementById('closeHistorialBtn').addEventListener('click', ()=>{
+  document.getElementById('historialModal').classList.remove('show');
 });
 
 /* =========================================================
