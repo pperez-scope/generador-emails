@@ -116,6 +116,12 @@
   .day-block{ border: 1px solid var(--border); border-radius: 8px; padding: 14px; margin-bottom: 12px; background: var(--panel-2); }
   .day-block textarea{ font-family: 'Inter', monospace; font-size: 0.85rem; }
 
+  .esc-item{ border: 1px solid var(--border); border-radius: 8px; padding: 12px; margin-bottom: 10px; background: var(--panel-2); }
+  .esc-item textarea.esc-obra-texto{ font-family: 'Inter', monospace; font-size: 0.85rem; white-space: pre; }
+  .esc-item-hint{ color: var(--muted); font-size: 0.72rem; margin-top: 4px; }
+  .esc-descanso{ background: transparent; border: 1px dashed var(--border); padding: 10px 14px; }
+  .esc-descanso .row{ align-items: center; margin: 0; }
+
   #output-card{ display:none; }
   #output-card.show{ display:block; }
   .subject-line{ font-weight:600; margin-bottom: 10px; }
@@ -274,6 +280,64 @@
     <div class="attach-row" id="attachRow"></div>
   </section>
 
+  <!-- ESCALETA -->
+  <header class="top" style="margin-top:44px;">
+    <div>
+      <h1 style="font-size:1.4rem;">Escaleta</h1>
+      <div class="sub">Documento técnico de sala (.xlsx), mismo código de colores que tus escaletas actuales</div>
+    </div>
+  </header>
+
+  <section class="card">
+    <h2>Encabezado</h2>
+    <div class="row">
+      <div class="field" style="flex:0 0 200px;">
+        <label>Fecha del concierto</label>
+        <input type="date" id="esc_fecha">
+      </div>
+    </div>
+    <div class="field">
+      <label>Ciclo / título del programa (una línea por renglón, tal como debe aparecer)</label>
+      <textarea id="esc_ciclo_titulo" rows="3" placeholder="CICLOS DE MIÉRCOLES
+A cuatro manos
+La eclosión modernista"></textarea>
+    </div>
+    <div class="field">
+      <label>Intérpretes</label>
+      <textarea id="esc_interpretes" rows="2" placeholder="Dúo Del Valle. Luis del Valle y Víctor del Valle, piano"></textarea>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Bloque de inicio<small id="escPreHint"></small></h2>
+    <div id="esc_pre_block"></div>
+  </section>
+
+  <section class="card">
+    <h2>Obras<small>Añade una por una; usa Tab al principio de una línea para marcarla como movimiento (Mayús+Tab para quitarlo)</small></h2>
+    <div id="escaletaObras"></div>
+    <div class="row" style="margin-top:8px;">
+      <button type="button" class="btn small" id="escAddObraBtn">+ Añadir obra</button>
+      <button type="button" class="btn small ghost" id="escAddDescansoBtn" style="display:none;">+ Añadir descanso</button>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Cierre</h2>
+    <div class="row">
+      <div class="field">
+        <label>Bis (opcional — se deja como "Bis" si no lo sabes aún)</label>
+        <input type="text" id="esc_bis" placeholder="Ej: Danza del fuego, dos pianos (Falla)">
+      </div>
+      <div class="field">
+        <label>Nota de fotos (opcional)</label>
+        <input type="text" id="esc_fotos" placeholder="Ej: FOTOS durante el concierto">
+      </div>
+    </div>
+  </section>
+
+  <button type="button" class="btn primary" id="generateEscaletaBtn" style="width:100%; padding:13px; font-size:0.95rem;">Generar escaleta (.xlsx)</button>
+
 </div>
 
 <!-- MODAL: gestionar planos -->
@@ -297,6 +361,8 @@
 </div>
 
 <div class="toast" id="toast">Copiado</div>
+
+<script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
 
 <script>
 /* ---------- ESTADO Y PERSISTENCIA ---------- */
@@ -785,6 +851,281 @@ document.getElementById('copyBtn').addEventListener('click', async ()=>{
     const toast = document.getElementById('toast');
     toast.classList.add('show');
     setTimeout(()=> toast.classList.remove('show'), 1600);
+  }
+});
+
+/* =========================================================
+   ESCALETA
+   ========================================================= */
+const ESC_COLOR = {
+  header: 'FFD9EAD3',
+  blue:   'FFCFE2F3',
+  yellow: 'FFFFF2CC',
+  pink:   'FFF4CCCC',
+  gold:   'FFFFE599',
+  none:   null
+};
+
+function escIsMiercoles(){ return cycleSelect.value === 'miercoles'; }
+
+/* ---------- Bloque de inicio (varía según ciclo) ---------- */
+function renderEscaletaPreBlock(){
+  const box = document.getElementById('esc_pre_block');
+  const hint = document.getElementById('escPreHint');
+  const descansoBtn = document.getElementById('escAddDescansoBtn');
+
+  if(escIsMiercoles()){
+    hint.textContent = 'Con entrevista de radio antes del concierto (siempre en este ciclo).';
+    descansoBtn.style.display = '';
+    box.innerHTML = `
+      <div class="row">
+        ${fieldHtml('esc_t_carta','Hora carta de ajuste')}
+        ${fieldHtml('esc_t_cartela','Hora cartela inicio (ej: 17:45/17:50)')}
+        ${fieldHtml('esc_t_puertas','Hora apertura de puertas')}
+      </div>
+      <div class="row">
+        ${fieldHtml('esc_duracion_entrevista','Duración de la entrevista (ej: 25 min aprox)')}
+        ${fieldHtml('esc_t_dingdong','Hora ding dong cafetería')}
+      </div>
+      <div class="row">
+        ${fieldHtml('esc_t_locutor','Hora inicio locutor RNE')}
+        ${fieldHtml('esc_t_aviso','Hora aviso de móviles (ej: 18:30/18:35)')}
+      </div>`;
+  } else {
+    hint.textContent = 'Sin entrevista de radio ni descanso (sábado / jóvenes intérpretes).';
+    descansoBtn.style.display = 'none';
+    box.innerHTML = `
+      <div class="row">
+        ${fieldHtml('esc_t_puertas','Hora apertura de puertas')}
+        ${fieldHtml('esc_t_cartela','Hora cartela inicio (ej: 11:45/11:50)')}
+        ${fieldHtml('esc_t_dingdong','Hora ding dong cafetería')}
+      </div>
+      <div class="row">
+        ${fieldHtml('esc_t_locutor','Hora inicio locutor/a')}
+        ${fieldHtml('esc_t_aviso','Hora aviso de móviles (ej: 12:01/12:05)')}
+      </div>`;
+  }
+}
+renderEscaletaPreBlock();
+cycleSelect.addEventListener('change', renderEscaletaPreBlock);
+
+/* ---------- Lista de obras (con divisor de descanso) ---------- */
+function addObraItem(){
+  const div = document.createElement('div');
+  div.className = 'esc-item';
+  div.innerHTML = `
+    <div class="row" style="align-items:flex-start;">
+      <div class="field" style="flex:2;margin-bottom:0;">
+        <label>Obra (compositor, título y movimientos — cada uno en su línea)</label>
+        <textarea class="esc-obra-texto" rows="4" placeholder="György Ligeti (1923-2006)
+Cinco piezas
+Induló [Marcha]"></textarea>
+        <div class="esc-item-hint">Cursor al principio de una línea + Tab = marcarla como movimiento (Mayús+Tab para quitarlo).</div>
+      </div>
+      <div class="field" style="flex:1;margin-bottom:0;">
+        <label>Formación en escena</label>
+        <input type="text" class="esc-obra-formacion" placeholder="Ej: piano a cuatro manos">
+      </div>
+      <button type="button" class="btn small ghost esc-item-del" style="flex:0 0 auto;margin-top:22px;">✕</button>
+    </div>`;
+  div.querySelector('.esc-item-del').addEventListener('click', ()=> div.remove());
+  document.getElementById('escaletaObras').appendChild(div);
+}
+
+function addDescansoItem(){
+  const div = document.createElement('div');
+  div.className = 'esc-item esc-descanso';
+  div.innerHTML = `
+    <div class="row">
+      <span style="flex:1;color:var(--muted);font-size:0.85rem;">⏸ Descanso</span>
+      <input type="text" class="esc-descanso-duracion" placeholder="Duración (ej: 10 min)" style="flex:0 0 180px;">
+      <button type="button" class="btn small ghost esc-item-del" style="flex:0 0 auto;">✕</button>
+    </div>`;
+  div.querySelector('.esc-item-del').addEventListener('click', ()=> div.remove());
+  document.getElementById('escaletaObras').appendChild(div);
+}
+
+document.getElementById('escAddObraBtn').addEventListener('click', addObraItem);
+document.getElementById('escAddDescansoBtn').addEventListener('click', addDescansoItem);
+addObraItem(); // primera obra por defecto
+
+// Tab dentro de un textarea de obra = indentar la línea actual (marca de movimiento)
+document.getElementById('escaletaObras').addEventListener('keydown', (e)=>{
+  if(!e.target.classList.contains('esc-obra-texto') || e.key !== 'Tab') return;
+  e.preventDefault();
+  const ta = e.target;
+  const start = ta.selectionStart;
+  const value = ta.value;
+  const lineStart = value.lastIndexOf('\n', start - 1) + 1;
+  if(e.shiftKey){
+    const existing = (value.slice(lineStart).match(/^ */) || [''])[0].length;
+    const removeCount = Math.min(3, existing);
+    ta.value = value.slice(0, lineStart) + value.slice(lineStart + removeCount);
+    ta.selectionStart = ta.selectionEnd = Math.max(lineStart, start - removeCount);
+  } else {
+    ta.value = value.slice(0, lineStart) + '   ' + value.slice(lineStart);
+    ta.selectionStart = ta.selectionEnd = start + 3;
+  }
+});
+
+/* ---------- Utilidades ---------- */
+function formatFechaLarga(isoDate){
+  if(!isoDate) return '';
+  const [y, m, d] = isoDate.split('-').map(Number);
+  const date = new Date(y, m - 1, d);
+  return date.toLocaleDateString('es-ES', {day:'numeric', month:'long', year:'numeric'});
+}
+function escVal(id){ const el = document.getElementById(id); return el ? el.value.trim() : ''; }
+
+/* ---------- Construcción de filas ---------- */
+function escStyleRow(row, fillHex){
+  for(let c = 1; c <= 8; c++){
+    const cell = row.getCell(c);
+    cell.font = { name:'Arial', size:10, bold:false };
+    cell.alignment = { vertical:'middle', horizontal: (c===1 ? 'right' : undefined), wrapText:true };
+    if(fillHex){
+      cell.fill = { type:'pattern', pattern:'solid', fgColor:{argb:fillHex} };
+    }
+  }
+}
+function escAddRow(ws, values, fillHex, boldCol){
+  const row = ws.addRow(values.concat(Array(8-values.length).fill('')));
+  escStyleRow(row, fillHex);
+  if(boldCol) row.getCell(boldCol).font = { name:'Arial', size:10, bold:true };
+  return row;
+}
+function escAddMergedHeaderRow(ws, text){
+  const row = ws.addRow([text]);
+  const rn = row.number;
+  ws.mergeCells(`A${rn}:H${rn}`);
+  const cell = ws.getCell(`A${rn}`);
+  cell.font = { name:'Arial', size:10, bold:true };
+  cell.alignment = { vertical:'middle', horizontal:'left', wrapText:true };
+  cell.fill = { type:'pattern', pattern:'solid', fgColor:{argb: ESC_COLOR.header} };
+  return row;
+}
+
+function escAddObraBlock(ws, texto, formacion, locucionLabel){
+  escAddRow(ws, ['', '', texto, formacion || '', 'Proyección rótulos', '', '', ''], ESC_COLOR.pink, 3);
+  escAddRow(ws, ['', '', 'Aplausos', '', '', '', 'Glorias', ''], ESC_COLOR.none);
+  escAddRow(ws, ['', '', locucionLabel, '', '', '', '', 'Streaming + salón azul'], ESC_COLOR.blue);
+}
+
+function escBuildPreBlockMiercoles(ws){
+  escAddRow(ws, [escVal('esc_t_carta'), '', 'Carta de ajuste', '', 'Desde Qlab', 'Desde iMac', '', 'Streaming + salón azul'], ESC_COLOR.blue);
+  escAddRow(ws, [escVal('esc_t_cartela'), '', 'Cartela inicio acto', '', 'Desde atem', '', '', 'Streaming + salón azul'], ESC_COLOR.blue);
+  escAddRow(ws, [escVal('esc_t_puertas'), '', 'Apertura puertas\nEntrada público', '', '', '', 'protocolo luces entrada público', ''], ESC_COLOR.yellow);
+  escAddRow(ws, [escVal('esc_t_puertas'), escVal('esc_duracion_entrevista'), 'Entrevista radio en salón azul', '', '', 'audio entrevista en auditorio', '', 'Streaming + salón azul'], ESC_COLOR.pink);
+  escAddRow(ws, [escVal('esc_t_dingdong'), '', 'Ding dong en cafetería', '', '', 'Quitar hilo musical de cafetería para mandar señal del auditorio', '', 'cafetería'], ESC_COLOR.gold);
+  escAddRow(ws, ['', '', 'Fin entrevista', 'Recogida set entrevista salón azul', '', '', '', ''], ESC_COLOR.none);
+  escAddRow(ws, ['', '', 'PG auditorio', '', 'Rótulo "en breves momentos..."', '', '', 'Streaming + salón azul'], ESC_COLOR.blue);
+  escAddRow(ws, [escVal('esc_t_locutor'), '', 'Inicio locutor RNE', '', 'Rótulo locutor RNE (no se proyecta en sala)', '', '', 'Streaming + salón azul'], ESC_COLOR.blue);
+  escAddRow(ws, [escVal('esc_t_aviso'), '', 'Aviso de móviles', '', '', 'Tras aviso desde hall coordinado con regiduría', '', 'Auditorio + salón azul'], ESC_COLOR.yellow);
+  escAddRow(ws, ['', '', 'Entrada intérprete/s', '', 'Rótulos inicio (no se proyectan en sala)', '', 'protocolo luces inicio concierto', ''], ESC_COLOR.none);
+}
+
+function escBuildPreBlockManana(ws){
+  escAddRow(ws, [escVal('esc_t_puertas'), '', 'Apertura puertas\nEntrada público', '', '', '', 'protocolo luces entrada público', ''], ESC_COLOR.yellow);
+  escAddRow(ws, ['', '', 'Carta de ajuste', '', 'Desde Qlab', 'Desde iMac', '', 'Streaming + salón azul'], ESC_COLOR.blue);
+  escAddRow(ws, [escVal('esc_t_cartela'), '', 'Cartela inicio acto', '', '', '', 'protocolo luces entrada público', 'Streaming + salón azul'], ESC_COLOR.blue);
+  escAddRow(ws, [escVal('esc_t_dingdong'), '', 'Ding dong en cafetería', '', '', 'Quitar hilo musical de cafetería para mandar señal del auditorio', '', 'cafetería'], ESC_COLOR.gold);
+  escAddRow(ws, [escVal('esc_t_locutor'), '', 'Inicio locutor/a', '', 'Rótulo locutor/a (no se proyecta)', '', '', 'Streaming + salón azul'], ESC_COLOR.blue);
+  escAddRow(ws, [escVal('esc_t_aviso'), '', 'Aviso de móviles', '', '', 'Tras aviso desde hall coordinado con regiduría', '', 'Auditorio + salón azul'], ESC_COLOR.yellow);
+  escAddRow(ws, ['', '', 'Entrada intérpretes', '', 'Rótulos inicio concierto (no se proyectan en sala)', '', 'protocolo luces inicio concierto', ''], ESC_COLOR.none);
+}
+
+function escBuildDescanso(ws, duracion){
+  escAddRow(ws, ['', '', 'Salida intérpretes', '', '', '', 'Glorias', ''], ESC_COLOR.none);
+  escAddRow(ws, ['', duracion || '', 'Descanso', '', '', '', 'Protocolo luz descanso', ''], ESC_COLOR.yellow);
+  escAddRow(ws, ['', '', 'Locución RNE\n+ minutos musicales', '', '', 'Durante los minutos musicales, meter sonido ambiente de sala', '', 'Streaming + salón azul'], ESC_COLOR.blue);
+  escAddRow(ws, ['', '', 'Din don 5 min antes de comienzo 2ª parte', '', '', 'Aviso desde regiduría', '', 'Hall / salón azul / cafetería / auditorio'], ESC_COLOR.yellow);
+  escAddRow(ws, ['', '', 'Din don 3 min antes de comienzo 2ª parte', '', '', 'Aviso desde regiduría', 'Quitar laterales sala', 'Hall / salón azul / cafetería / auditorio'], ESC_COLOR.yellow);
+  escAddRow(ws, ['', '', 'Din don 1 min antes de comienzo 2ª parte', '', '', 'Aviso desde regiduría', 'Quitar central sala', 'Hall / salón azul / cafetería / auditorio'], ESC_COLOR.yellow);
+  escAddRow(ws, ['', '', 'Locución RNE', '', '', '', '', ''], ESC_COLOR.blue);
+  escAddRow(ws, ['', '', 'Entrada intérpretes', '', '', '', 'Glorias', ''], ESC_COLOR.none);
+}
+
+function escBuildFinalBlock(ws, locucionLabel){
+  const bis = escVal('esc_bis');
+  const fotos = escVal('esc_fotos');
+  escAddRow(ws, ['', '', 'Salida intérpretes\nEntrada intérpretes para propina', '', '', '', 'Glorias', ''], ESC_COLOR.none);
+  escAddRow(ws, ['', '', bis ? `Bis: ${bis}` : 'Bis', '', '', '', '', ''], ESC_COLOR.pink, 3);
+  escAddRow(ws, ['', '', 'Aplausos\nSalida intérprete/s', '', '', '', 'Glorias', ''], ESC_COLOR.none);
+  escAddRow(ws, ['', '', locucionLabel, '', '', '', '', 'Streaming + salón azul'], ESC_COLOR.blue);
+  escAddRow(ws, ['', '', 'FIN EVENTO', '', '', '', 'protocolo luces salida público', ''], ESC_COLOR.yellow);
+  if(fotos){
+    escAddRow(ws, ['', '', fotos, '', '', '', '', ''], ESC_COLOR.none);
+  }
+}
+
+/* ---------- Generar y descargar ---------- */
+document.getElementById('generateEscaletaBtn').addEventListener('click', async ()=>{
+  if(typeof ExcelJS === 'undefined'){
+    alert('No se ha podido cargar la librería para generar el Excel. Comprueba tu conexión a internet y vuelve a intentarlo.');
+    return;
+  }
+  const btn = document.getElementById('generateEscaletaBtn');
+  btn.disabled = true;
+  const originalLabel = btn.textContent;
+  btn.textContent = 'Generando…';
+
+  try{
+    const wb = new ExcelJS.Workbook();
+    const ws = wb.addWorksheet('Hoja 1', { views: [{ state:'frozen', ySplit:5 }] });
+    ws.columns = [
+      {width:10.13},{width:9},{width:44},{width:26},{width:22},{width:24},{width:22},{width:20}
+    ];
+
+    const miercoles = escIsMiercoles();
+    const locucionLabel = miercoles ? 'Locución RNE' : 'Locución';
+
+    const fechaTexto = formatFechaLarga(escVal('esc_fecha')) || escVal('esc_fecha');
+    const cicloTexto = escVal('esc_ciclo_titulo');
+    const interpretesTexto = escVal('esc_interpretes');
+
+    escAddMergedHeaderRow(ws, fechaTexto);
+    escAddMergedHeaderRow(ws, cicloTexto);
+    escAddMergedHeaderRow(ws, interpretesTexto);
+    ws.addRow(['']); // fila 4, espaciadora
+
+    escAddRow(ws, ['INICIO','DURACIÓN','ACCIÓN/OBRAS','MOVIMIENTO ESCENARIO','VÍDEO','SONIDO','LUCES','ENVÍO A:'], null);
+    const headerRow = ws.getRow(5);
+    for(let c=1;c<=8;c++){ headerRow.getCell(c).font = {name:'Arial', size:10, bold:true}; headerRow.getCell(c).alignment = {vertical:'middle', horizontal:'center', wrapText:true}; }
+
+    if(miercoles){ escBuildPreBlockMiercoles(ws); } else { escBuildPreBlockManana(ws); }
+
+    const items = Array.from(document.querySelectorAll('#escaletaObras > .esc-item'));
+    items.forEach(item=>{
+      if(item.classList.contains('esc-descanso')){
+        const duracion = item.querySelector('.esc-descanso-duracion').value.trim();
+        escBuildDescanso(ws, duracion);
+      } else {
+        const texto = item.querySelector('.esc-obra-texto').value.trim();
+        if(!texto) return;
+        const formacion = item.querySelector('.esc-obra-formacion').value.trim();
+        escAddObraBlock(ws, texto, formacion, locucionLabel);
+      }
+    });
+
+    escBuildFinalBlock(ws, locucionLabel);
+
+    const buffer = await wb.xlsx.writeBuffer();
+    const blob = new Blob([buffer], {type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+    const url = URL.createObjectURL(blob);
+    const isoDate = escVal('esc_fecha') || 'sin-fecha';
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `Escaleta_${isoDate}.xlsx`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(()=> URL.revokeObjectURL(url), 4000);
+  } catch(err){
+    console.error(err);
+    alert('Ha ocurrido un error generando la escaleta. Revisa los datos e inténtalo de nuevo.');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = originalLabel;
   }
 });
 
