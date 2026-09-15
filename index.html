@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Email técnico · Intérpretes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #17181c;
+    --panel: #1f2126;
+    --panel-2: #262931;
+    --border: #34373f;
+    --text: #ececeb;
+    --muted: #9a9ca6;
+    --accent: #e2a33c;
+    --accent-dim: #7a5b28;
+    --danger: #c0685a;
+    --ok: #7fae87;
+    --radius: 10px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', system-ui, sans-serif;
+    line-height: 1.5;
+    padding-bottom: 80px;
+  }
+  .wrap{ max-width: 880px; margin: 0 auto; padding: 40px 24px 20px; }
+  header.top{
+    display:flex; align-items:baseline; justify-content:space-between; gap: 16px;
+    margin-bottom: 32px; padding-bottom: 20px; border-bottom: 1px solid var(--border);
+  }
+  header.top h1{
+    font-family:'Fraunces', serif; font-weight:500; font-size: 1.7rem; margin:0;
+    letter-spacing: 0.2px;
+  }
+  header.top .sub{ color: var(--muted); font-size: 0.85rem; margin-top:4px; }
+  .lamp{
+    width: 34px; height: 34px; border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, var(--accent), var(--accent-dim) 70%, transparent 72%);
+    flex: 0 0 auto;
+  }
+
+  section.card{
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 22px 24px;
+    margin-bottom: 18px;
+  }
+  section.card h2{
+    font-family:'Fraunces', serif; font-weight: 500; font-size: 1.05rem;
+    margin: 0 0 16px; color: var(--text);
+  }
+  section.card h2 small{
+    display:block; font-family:'Inter',sans-serif; font-weight:400; color: var(--muted); font-size: 0.78rem; margin-top: 2px;
+  }
+
+  label{ display:block; font-size: 0.82rem; color: var(--muted); margin-bottom: 6px; }
+  .field{ margin-bottom: 16px; }
+  .row{ display:flex; gap: 14px; flex-wrap: wrap; }
+  .row > .field{ flex: 1 1 200px; }
+
+  input[type=text], input[type=date], textarea, select{
+    width:100%; background: var(--panel-2); border: 1px solid var(--border);
+    color: var(--text); border-radius: 7px; padding: 9px 11px; font-size: 0.92rem;
+    font-family: inherit;
+  }
+  input:focus, textarea:focus, select:focus{
+    outline: none; border-color: var(--accent);
+  }
+  textarea{ resize: vertical; min-height: 70px; }
+
+  .seg{ display:flex; border: 1px solid var(--border); border-radius: 7px; overflow:hidden; width: fit-content; }
+  .seg button{
+    background: var(--panel-2); color: var(--muted); border: none; padding: 8px 16px;
+    font-size: 0.86rem; cursor: pointer; font-family: inherit;
+  }
+  .seg button.active{ background: var(--accent); color: #201a0d; font-weight: 600; }
+  .seg button:not(:last-child){ border-right: 1px solid var(--border); }
+
+  .checkline{ display:flex; align-items:center; gap: 8px; font-size: 0.86rem; color: var(--text); margin: 4px 0 14px; }
+  .checkline input{ width: 15px; height:15px; }
+
+  .schedule-block{ border-top: 1px dashed var(--border); padding-top: 16px; margin-top: 4px; }
+
+  .btn{
+    background: var(--panel-2); color: var(--text); border: 1px solid var(--border);
+    padding: 9px 15px; border-radius: 7px; font-size: 0.86rem; cursor:pointer; font-family: inherit;
+  }
+  .btn:hover{ border-color: var(--accent); }
+  .btn.primary{ background: var(--accent); color: #201a0d; border-color: var(--accent); font-weight: 600; }
+  .btn.primary:hover{ filter: brightness(1.06); }
+  .btn.small{ padding: 5px 10px; font-size: 0.78rem; }
+  .btn.ghost{ background: transparent; }
+
+  .plano-preview{ display:flex; align-items:center; gap:14px; margin-top: 8px; }
+  .plano-preview img{ width: 90px; height: 64px; object-fit: cover; border-radius: 6px; border: 1px solid var(--border); background: var(--panel-2); }
+  .plano-preview .muted-box{
+    width:90px;height:64px;border-radius:6px;border:1px dashed var(--border);
+    display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:0.7rem;text-align:center;padding:4px;
+  }
+
+  .program-row{ display:flex; gap:8px; margin-bottom:8px; align-items:center; }
+  .program-row input{ flex:1; }
+  .program-row .btn{ flex: 0 0 auto; }
+
+  .obra-meta{ display:flex; gap:8px; margin-bottom:6px; }
+  .obra-meta input:first-child{ flex: 0 0 40%; }
+
+  #output-card{ display:none; }
+  #output-card.show{ display:block; }
+  .subject-line{ font-weight:600; margin-bottom: 10px; }
+  pre#emailBody{
+    white-space: pre-wrap; word-wrap: break-word; font-family: 'Inter', sans-serif; font-size: 0.92rem;
+    background: var(--panel-2); border:1px solid var(--border); border-radius: 8px; padding: 16px;
+    max-height: 480px; overflow-y:auto; margin: 0 0 14px;
+  }
+  .attach-row{ display:flex; gap: 14px; flex-wrap:wrap; margin-bottom: 16px; }
+  .attach-card{
+    border:1px solid var(--border); border-radius: 8px; padding: 10px; background: var(--panel-2);
+    width: 160px; text-align:center;
+  }
+  .attach-card img{ width:100%; height:90px; object-fit:cover; border-radius:5px; margin-bottom:8px; }
+  .attach-card .label{ font-size:0.72rem; color:var(--muted); margin-bottom:8px; }
+
+  .toast{
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+    background: var(--ok); color: #12261a; padding: 10px 18px; border-radius: 8px;
+    font-size: 0.86rem; font-weight:600; opacity:0; pointer-events:none; transition: opacity .2s;
+  }
+  .toast.show{ opacity: 1; }
+
+  .manage-list{ margin-top: 10px; }
+  .manage-item{ display:flex; align-items:center; gap:10px; padding: 8px 0; border-bottom: 1px solid var(--border); }
+  .manage-item img, .manage-item .muted-box{ width:56px; height:40px; object-fit:cover; border-radius:5px; flex:0 0 auto; }
+  .manage-item .name{ flex:1; font-size: 0.86rem; }
+  .modal-backdrop{
+    display:none; position:fixed; inset:0; background: rgba(0,0,0,.55); z-index: 50;
+    align-items:center; justify-content:center;
+  }
+  .modal-backdrop.show{ display:flex; }
+  .modal{
+    background: var(--panel); border:1px solid var(--border); border-radius: var(--radius);
+    padding: 22px 24px; width: 90%; max-width: 460px; max-height: 80vh; overflow-y:auto;
+  }
+  .modal h3{ font-family:'Fraunces',serif; font-weight:500; margin: 0 0 14px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div>
+      <h1>Email técnico</h1>
+      <div class="sub">Fundación Juan March · comunicación con intérpretes y representantes</div>
+    </div>
+    <div class="lamp"></div>
+  </header>
+
+  <!-- CICLO Y CONTEXTO -->
+  <section class="card">
+    <h2>Contexto del concierto</h2>
+    <div class="row">
+      <div class="field">
+        <label>Ciclo</label>
+        <select id="cycle">
+          <option value="miercoles">Ciclos de miércoles</option>
+          <option value="sabado">Conciertos de sábado</option>
+          <option value="jovenes">Jóvenes intérpretes</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Idioma del email</label>
+        <div class="seg" id="langSeg">
+          <button type="button" data-val="es" class="active">Español</button>
+          <button type="button" data-val="en">English</button>
+        </div>
+      </div>
+      <div class="field">
+        <label>Destinatario</label>
+        <div class="seg" id="typeSeg">
+          <button type="button" data-val="interprete" class="active">Intérprete</button>
+          <button type="button" data-val="representante">Representante</button>
+        </div>
+      </div>
+    </div>
+    <div class="field">
+      <label>Nombre(s) del/de los destinatario/s (tal cual quieres que aparezca en el saludo)</label>
+      <input type="text" id="names" placeholder="Ej: Aurelio, Luciana y Flor">
+    </div>
+    <div class="field">
+      <label>Formación instrumental</label>
+      <div class="row">
+        <select id="formacion" style="flex:1"></select>
+        <button type="button" class="btn small" id="manageBtn" style="flex:0 0 auto">Gestionar planos</button>
+      </div>
+      <div class="plano-preview" id="planoPreview"></div>
+    </div>
+    <div class="checkline">
+      <input type="checkbox" id="unclearLayout">
+      <label for="unclearLayout" style="margin:0;">Aún no tengo clara la distribución en el escenario (se lo preguntaré a ellos primero)</label>
+    </div>
+  </section>
+
+  <!-- HORARIOS -->
+  <section class="card">
+    <h2>Plan de trabajo<small id="scheduleHint"></small></h2>
+    <div id="scheduleFields"></div>
+  </section>
+
+  <!-- PROGRAMA -->
+  <section class="card">
+    <h2>Programa<small>Solo necesario si no todos los intérpretes participan en todas las obras</small></h2>
+    <div class="checkline">
+      <input type="checkbox" id="includeProgram">
+      <label for="includeProgram" style="margin:0;">Incluir listado de obras con los intérpretes que participan en cada una</label>
+    </div>
+    <div id="programRows" style="display:none;">
+      <div id="programList"></div>
+      <button type="button" class="btn small" id="addObraBtn">+ Añadir obra</button>
+    </div>
+  </section>
+
+  <!-- IMÁGENES -->
+  <section class="card">
+    <h2>Iluminación<small id="lightingHint">Se adjunta salvo que aún no tengas clara la distribución en el escenario</small></h2>
+    <div id="lightingFieldBox">
+      <div class="field">
+        <label>Imagen de iluminación estándar</label>
+        <input type="file" id="lightingFile" accept="image/*">
+      </div>
+      <div id="lightingPreviewBox"></div>
+    </div>
+    <div id="lightingUnclearNote" style="display:none;color:var(--muted);font-size:0.85rem;">No se adjuntará imagen de iluminación: primero se les preguntará por la distribución en el escenario.</div>
+  </section>
+
+  <!-- NOTAS EXTRA -->
+  <section class="card">
+    <h2>Notas o frases extra<small>Se añaden al final del email, antes de la despedida</small></h2>
+    <textarea id="extraNotes" placeholder="Ej: confirmar si necesitan silla de descanso en escenario, mención específica al piano Steinway, etc."></textarea>
+  </section>
+
+  <div class="field" style="margin: 24px 0;">
+    <label>Asunto del email</label>
+    <input type="text" id="subject">
+  </div>
+
+  <button class="btn primary" id="generateBtn" style="width:100%; padding:13px; font-size:0.95rem;">Generar email</button>
+
+  <!-- OUTPUT -->
+  <section class="card" id="output-card">
+    <h2>Email generado</h2>
+    <pre id="emailBody"></pre>
+    <button class="btn primary" id="copyBtn">Copiar texto</button>
+
+    <div class="attach-row" id="attachRow"></div>
+  </section>
+
+</div>
+
+<!-- MODAL: gestionar planos -->
+<div class="modal-backdrop" id="manageModal">
+  <div class="modal">
+    <h3>Planos por formación</h3>
+    <div class="field">
+      <label>Nombre de la formación</label>
+      <input type="text" id="newFormacionName" placeholder="Ej: Trío de cuerda">
+    </div>
+    <div class="field">
+      <label>Plano (imagen)</label>
+      <input type="file" id="newFormacionFile" accept="image/*">
+    </div>
+    <button class="btn primary small" id="addFormacionBtn">Añadir / actualizar</button>
+    <div class="manage-list" id="manageList"></div>
+    <div style="text-align:right; margin-top:14px;">
+      <button class="btn small" id="closeManageBtn">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast">Copiado</div>
+
+<script>
+/* ---------- ESTADO Y PERSISTENCIA ---------- */
+const LS_FORMACIONES = 'et_formaciones_v1';
+
+const DEFAULT_FORMACIONES = [
+  'Piano solo','Dúo (voz y piano)','Dúo instrumental','Trío',
+  'Cuarteto de cuerda','Quinteto de viento','Quinteto (piano y cuerda)',
+  'Orquesta de cámara'
+];
+
+function loadFormaciones(){
+  const raw = localStorage.getItem(LS_FORMACIONES);
+  if(raw) return JSON.parse(raw);
+  const initial = {};
+  DEFAULT_FORMACIONES.forEach(f => initial[f] = null);
+  localStorage.setItem(LS_FORMACIONES, JSON.stringify(initial));
+  return initial;
+}
+function saveFormaciones(obj){ localStorage.setItem(LS_FORMACIONES, JSON.stringify(obj)); }
+
+let formaciones = loadFormaciones();
+let lightingCurrentDataUrl = null;
+
+let state = { lang:'es', type:'interprete' };
+
+/* ---------- UI: segmented controls ---------- */
+document.querySelectorAll('#langSeg button').forEach(b=>{
+  b.addEventListener('click', ()=>{
+    document.querySelectorAll('#langSeg button').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active'); state.lang = b.dataset.val;
+    renderScheduleFields(); updateSubjectPlaceholder();
+  });
+});
+document.querySelectorAll('#typeSeg button').forEach(b=>{
+  b.addEventListener('click', ()=>{
+    document.querySelectorAll('#typeSeg button').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active'); state.type = b.dataset.val;
+  });
+});
+
+/* ---------- FORMACIÓN SELECT + PREVIEW ---------- */
+const formacionSelect = document.getElementById('formacion');
+function renderFormacionSelect(){
+  formacionSelect.innerHTML = '';
+  Object.keys(formaciones).forEach(name=>{
+    const opt = document.createElement('option');
+    opt.value = name; opt.textContent = name;
+    formacionSelect.appendChild(opt);
+  });
+  renderPlanoPreview();
+}
+function renderPlanoPreview(){
+  const box = document.getElementById('planoPreview');
+  const name = formacionSelect.value;
+  const img = formaciones[name];
+  if(img){
+    box.innerHTML = `<img src="${img}"><span style="color:var(--muted);font-size:0.8rem;">Plano guardado para "${name}"</span>`;
+  } else {
+    box.innerHTML = `<div class="muted-box">Sin plano</div><span style="color:var(--muted);font-size:0.8rem;">Añade uno en "Gestionar planos"</span>`;
+  }
+}
+formacionSelect.addEventListener('change', renderPlanoPreview);
+renderFormacionSelect();
+
+/* ---------- MODAL GESTIÓN DE PLANOS ---------- */
+const manageModal = document.getElementById('manageModal');
+document.getElementById('manageBtn').addEventListener('click', ()=>{
+  renderManageList();
+  manageModal.classList.add('show');
+});
+document.getElementById('closeManageBtn').addEventListener('click', ()=> manageModal.classList.remove('show'));
+
+function renderManageList(){
+  const list = document.getElementById('manageList');
+  list.innerHTML = '';
+  Object.keys(formaciones).forEach(name=>{
+    const row = document.createElement('div');
+    row.className = 'manage-item';
+    const imgHtml = formaciones[name] ? `<img src="${formaciones[name]}">` : `<div class="muted-box"></div>`;
+    row.innerHTML = `${imgHtml}<div class="name">${name}</div>
+      <button class="btn small ghost" data-del="${name}">Eliminar</button>`;
+    list.appendChild(row);
+  });
+  list.querySelectorAll('[data-del]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      delete formaciones[btn.dataset.del];
+      saveFormaciones(formaciones);
+      renderManageList(); renderFormacionSelect();
+    });
+  });
+}
+
+document.getElementById('addFormacionBtn').addEventListener('click', ()=>{
+  const name = document.getElementById('newFormacionName').value.trim();
+  const fileInput = document.getElementById('newFormacionFile');
+  if(!name){ alert('Ponle un nombre a la formación.'); return; }
+  const file = fileInput.files[0];
+  if(file){
+    const reader = new FileReader();
+    reader.onload = e=>{
+      formaciones[name] = e.target.result;
+      saveFormaciones(formaciones);
+      renderManageList(); renderFormacionSelect();
+      document.getElementById('newFormacionName').value='';
+      fileInput.value='';
+    };
+    reader.readAsDataURL(file);
+  } else {
+    if(!(name in formaciones)) formaciones[name] = null;
+    saveFormaciones(formaciones);
+    renderManageList(); renderFormacionSelect();
+    document.getElementById('newFormacionName').value='';
+  }
+});
+
+/* ---------- ILUMINACIÓN Y DISTRIBUCIÓN ---------- */
+const lightingPreviewBox = document.getElementById('lightingPreviewBox');
+function renderLightingPreview(){
+  lightingPreviewBox.innerHTML = lightingCurrentDataUrl
+    ? `<div class="plano-preview"><img src="${lightingCurrentDataUrl}"><span style="color:var(--muted);font-size:0.8rem;">Imagen cargada para este email</span></div>`
+    : `<div class="plano-preview"><div class="muted-box">Sin imagen</div><span style="color:var(--muted);font-size:0.8rem;">Sube una imagen de iluminación</span></div>`;
+}
+renderLightingPreview();
+
+document.getElementById('unclearLayout').addEventListener('change', e=>{
+  const unclear = e.target.checked;
+  document.getElementById('lightingFieldBox').style.display = unclear ? 'none' : 'block';
+  document.getElementById('lightingUnclearNote').style.display = unclear ? 'block' : 'none';
+});
+
+document.getElementById('lightingFile').addEventListener('change', e=>{
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = ev=>{
+    lightingCurrentDataUrl = ev.target.result;
+    renderLightingPreview();
+  };
+  reader.readAsDataURL(file);
+});
+
+/* ---------- PROGRAMA (obras) ---------- */
+document.getElementById('includeProgram').addEventListener('change', e=>{
+  document.getElementById('programRows').style.display = e.target.checked ? 'block' : 'none';
+  if(e.target.checked && document.getElementById('programList').children.length===0) addObraRow();
+});
+document.getElementById('addObraBtn').addEventListener('click', addObraRow);
+
+function addObraRow(){
+  const list = document.getElementById('programList');
+  const row = document.createElement('div');
+  row.className = 'obra-meta';
+  row.innerHTML = `
+    <input type="text" placeholder="Compositor / obra" class="obra-title">
+    <input type="text" placeholder="Intérpretes que participan" class="obra-performers">
+    <button type="button" class="btn small ghost obra-del">✕</button>`;
+  row.querySelector('.obra-del').addEventListener('click', ()=> row.remove());
+  list.appendChild(row);
+}
+
+/* ---------- HORARIOS DINÁMICOS POR CICLO ---------- */
+const cycleSelect = document.getElementById('cycle');
+cycleSelect.addEventListener('change', ()=>{ renderScheduleFields(); updateSubjectPlaceholder(); });
+
+function fieldHtml(id, label, type='text', extra=''){
+  return `<div class="field"><label>${label}</label><input type="${type}" id="${id}" ${extra}></div>`;
+}
+
+function renderScheduleFields(){
+  const cycle = cycleSelect.value;
+  const box = document.getElementById('scheduleFields');
+  const hint = document.getElementById('scheduleHint');
+
+  if(cycle === 'miercoles'){
+    hint.textContent = 'Un solo día: ensayo libre, montaje, prueba técnica y concierto.';
+    box.innerHTML = `
+      <div class="row">
+        ${fieldHtml('m_date','Fecha (ej: miércoles 20 de mayo)')}
+      </div>
+      <div class="row">
+        ${fieldHtml('m_ensayo_ini','Ensayo libre — inicio')}
+        ${fieldHtml('m_ensayo_fin','Ensayo libre — fin')}
+      </div>
+      <div class="row">
+        <div class="field">
+          <label>Afinación necesaria</label>
+          <select id="m_afinacion_tipo">
+            <option value="piano">Piano</option>
+            <option value="clave">Clave</option>
+            <option value="ninguna">Sin afinación necesaria</option>
+          </select>
+        </div>
+      </div>
+      <div class="row" id="m_afinacion_row">
+        ${fieldHtml('m_afinacion_ini','Afinación/montaje — inicio')}
+        ${fieldHtml('m_afinacion_fin','Afinación/montaje — fin')}
+      </div>
+      <div class="row">
+        ${fieldHtml('m_prueba_ini','Prueba técnica luz+sonido — inicio')}
+        ${fieldHtml('m_prueba_fin','Prueba técnica luz+sonido — fin')}
+      </div>
+      <div class="row">
+        ${fieldHtml('m_liberado','Escenario liberado')}
+        ${fieldHtml('m_puertas','Apertura de puertas')}
+      </div>
+      <div class="row">
+        ${fieldHtml('m_concierto','Hora del concierto')}
+        ${fieldHtml('m_intervalo','Intervalo/pausa (opcional, ej: 10 min)')}
+        ${fieldHtml('m_fin','Fin aprox.')}
+      </div>`;
+    const afinacionSelect = document.getElementById('m_afinacion_tipo');
+    const afinacionRow = document.getElementById('m_afinacion_row');
+    const toggleAfinacionRow = ()=>{ afinacionRow.style.display = afinacionSelect.value === 'ninguna' ? 'none' : 'flex'; };
+    afinacionSelect.addEventListener('change', toggleAfinacionRow);
+    toggleAfinacionRow();
+  }
+
+  else if(cycle === 'sabado'){
+    hint.textContent = 'Solo la prueba de sonido; sin tabla de horarios completa.';
+    box.innerHTML = `
+      <div class="row">
+        ${fieldHtml('s_date','Fecha (opcional)')}
+        ${fieldHtml('s_prueba','Hora habitual de prueba de sonido')}
+        ${fieldHtml('s_prueba_adelantada','Hora si se adelanta por cambio de line-up')}
+      </div>`;
+  }
+
+  else if(cycle === 'jovenes'){
+    hint.textContent = 'Dos días: primer concierto y segundo día con ensayo + concierto.';
+    box.innerHTML = `
+      <div class="schedule-block">
+        <label style="font-weight:600;color:var(--text);margin-bottom:8px;">Día 1 (primer concierto)</label>
+        <div class="row">
+          ${fieldHtml('j1_date','Fecha / día (ej: domingo)')}
+          ${fieldHtml('j1_montaje','Montaje técnico')}
+          ${fieldHtml('j1_llegada','Llegada de intérpretes')}
+        </div>
+        <div class="row">
+          ${fieldHtml('j1_prueba','Prueba técnica')}
+          ${fieldHtml('j1_liberado','Liberación de escenario')}
+          ${fieldHtml('j1_puertas','Apertura de puertas')}
+        </div>
+        <div class="row">
+          ${fieldHtml('j1_concierto','Hora del concierto')}
+          ${fieldHtml('j1_duracion','Duración aprox. (ej: 60 min)')}
+        </div>
+      </div>
+      <div class="schedule-block">
+        <label style="font-weight:600;color:var(--text);margin-bottom:8px;">Día 2</label>
+        <div class="row">
+          ${fieldHtml('j2_date','Fecha / día (ej: lunes)')}
+          ${fieldHtml('j2_libre','Auditorio libre para ensayar desde')}
+          ${fieldHtml('j2_prueba','Prueba técnica')}
+        </div>
+        <div class="row">
+          ${fieldHtml('j2_liberado','Liberación de escenario')}
+          ${fieldHtml('j2_puertas','Apertura de puertas')}
+          ${fieldHtml('j2_concierto','Hora del concierto')}
+        </div>
+        <div class="row">
+          ${fieldHtml('j2_duracion','Duración aprox.')}
+          ${fieldHtml('j2_fotos','Hora sesión de fotos (opcional)')}
+        </div>
+      </div>`;
+  }
+}
+renderScheduleFields();
+
+/* ---------- ASUNTO por defecto ---------- */
+const CYCLE_LABEL = {
+  miercoles: {es:'Ciclo de miércoles', en:'Wednesday concert'},
+  sabado: {es:'Concierto de sábado', en:'Saturday concert'},
+  jovenes: {es:'Jóvenes intérpretes', en:'Young performers'}
+};
+function updateSubjectPlaceholder(){
+  const cycle = cycleSelect.value;
+  const lang = state.lang;
+  const base = lang === 'es'
+    ? `${CYCLE_LABEL[cycle].es} — información técnica`
+    : `${CYCLE_LABEL[cycle].en} — technical information`;
+  document.getElementById('subject').value = base;
+}
+updateSubjectPlaceholder();
+
+/* ---------- TEXTOS ---------- */
+const T = {
+  es: {
+    greeting: n => `Estimados/as ${n},`,
+    introDirect: `Soy Patricia, del equipo técnico, encantada de saludaros.`,
+    introThird: `Soy Patricia, del equipo técnico; es un placer saludarles.`,
+    introLineDirect: `Ya estamos preparando este concierto y para asegurarnos de que tenemos en cuenta todas vuestras necesidades técnicas me gustaría confirmar varios aspectos:`,
+    introLineThird: `Ya estamos preparando este concierto y para asegurarnos de que tenemos en cuenta todas las necesidades técnicas de los intérpretes, me gustaría confirmar varios aspectos:`,
+    headingTest: 'Pruebas técnicas',
+    headingSchedule: 'Recuerdo el plan de trabajo:',
+    headingStage: 'Distribución del escenario',
+    headingMovements: 'Programa, movimientos escénicos y final del concierto',
+    furnitureDirect: `Por favor, ¿podéis concretarme las necesidades de mobiliario escénico: sillas, atriles o cualquier otro elemento que vayáis a utilizar, para poder tenerlo preparado a vuestra llegada? Si necesitáis atriles, ¿traéis partituras en papel o iPad? Esta información nos es útil para poder diseñar iluminación con antelación.`,
+    furnitureThird: `¿Podríais indicarnos las necesidades de mobiliario escénico de los intérpretes: sillas, atriles u otros elementos que vayan a utilizar, para tenerlo preparado a su llegada? Si necesitan atriles, ¿utilizarán partituras en papel o iPad? Esta información nos resulta útil para diseñar la iluminación con antelación.`,
+    stageAttachDirect: f => `Adjunto un plano del escenario con la disposición habitual para ${f}. ¿Vuestra disposición será así o tenéis otra idea? También incluyo una imagen con la iluminación estándar que preparamos para este tipo de conciertos y que, salvo que se indique lo contrario, será la que utilizaremos durante el evento.`,
+    stageAttachThird: f => `Adjunto un plano del escenario con la disposición habitual para ${f}. ¿Será esta la distribución o tienen otra idea? También incluyo una imagen de la iluminación estándar que preparamos para este tipo de conciertos, que salvo indicación contraria será la que utilicemos durante el evento.`,
+    stageAskDirect: `Para poder planificar la iluminación de la sala y la toma de sonido para la retransmisión, necesitamos conocer cuál será vuestra disposición en el escenario. ¿Podríais enviarme un plano, esquema o boceto de la distribución? Si tenéis diferentes posiciones o plantillas, enviadnos los dibujos de todas las opciones.`,
+    stageAskThird: `Para poder planificar la iluminación de la sala y la toma de sonido para la retransmisión, necesitamos conocer cuál será su disposición en el escenario. ¿Podrían enviarnos un plano, esquema o boceto de la distribución? Si tienen diferentes posiciones o plantillas, envíennos los dibujos de todas las opciones.`,
+    movementsNoProgramDirect: `Es importante para nosotros conocer si abandonaréis el escenario entre obras, especialmente si hubiera obras de formación reducida. También si tenéis previsto ofrecer un bis y, en tal caso, cuál sería, para prevenir al personal de sala, técnicos y locutor del streaming.`,
+    movementsNoProgramThird: `Es importante para nosotros saber si está previsto que abandonen el escenario en algún momento del programa y si tienen pensado interpretar un bis y, en tal caso, cuál sería, para poder informar a los técnicos, al personal de sala y al locutor de la retransmisión.`,
+    movementsProgramIntroDirect: `Es importante para nosotros conocer qué intérpretes participan en cada obra, así como vuestras entradas y salidas durante el programa, especialmente si alguno de vosotros no interviene en una obra concreta, para que el equipo técnico pueda retirar lo necesario del escenario si hace falta. Nos ayudaría mucho que indicarais quién interviene en cada obra:`,
+    movementsProgramIntroThird: `Es importante para nosotros conocer qué intérpretes participan en cada obra, así como sus entradas y salidas durante el programa, especialmente si alguno de ellos no interviene en una obra concreta, para que el equipo técnico pueda retirar lo necesario del escenario si hace falta. Nos ayudaría mucho que nos indicaran quién interviene en cada obra:`,
+    encoreAfterProgramDirect: `Además, indicadnos si tenéis previsto ofrecer un bis y, en tal caso, cuál sería, para prevenir al personal de sala, técnicos y locutor del streaming.`,
+    encoreAfterProgramThird: `Además, indíquennos si tienen previsto ofrecer un bis y, en tal caso, cuál sería, para prevenir al personal de sala, técnicos y locutor del streaming.`,
+    closingDirect: `Quedo a vuestra disposición para lo que necesitéis en cuanto a iluminación, sonido o vídeo del evento.`,
+    closingThird: `Quedo a su disposición para cualquier aspecto técnico relacionado con la iluminación, el sonido o el vídeo del evento.`,
+    signoff: 'Saludos,',
+    testMiercoles: (t) => `El día del concierto, las pruebas técnicas de iluminación tendrán lugar a las ${t} junto con las pruebas de sonido de RNE. Al comienzo de las pruebas, el técnico mostrará la iluminación preparada con el fin de confirmar si es agradable y suficiente para la lectura de partituras y textos. Después necesitamos unos minutos de ensayo musical y lecturas para preparar la toma microfónica para grabación y retransmisión.`,
+    testSabadoDirect: (t, early) => `El día del concierto, las pruebas de sonido tendrán lugar habitualmente a las ${t}${early ? `, aunque si hay cambios en el reparto de intérpretes sería recomendable adelantarlas a las ${early}` : ''}. Al comienzo de las pruebas, el técnico os mostrará la iluminación preparada para confirmar que os resulta cómoda y que es suficiente para la lectura de partituras. Después necesitaremos unos minutos de ensayo musical para preparar la toma microfónica para grabación y retransmisión.`,
+    testSabadoThird: (t, early) => `El día del concierto, las pruebas de sonido tendrán lugar habitualmente a las ${t}${early ? `, aunque si hay cambios en el reparto de intérpretes sería recomendable adelantarlas a las ${early}` : ''}. Al comienzo de las pruebas, el técnico mostrará a los intérpretes la iluminación preparada para confirmar que resulta cómoda y suficiente para la lectura de partituras. Después necesitaremos unos minutos de ensayo musical para preparar la toma microfónica para grabación y retransmisión.`,
+    testJovenes: (d1, t1, d2) => `Las pruebas técnicas tendrán lugar el ${d1}, día del primer concierto, a las ${t1}. El ${d2} no se realizarán pruebas técnicas. Al comienzo de las pruebas, el técnico os mostrará la iluminación preparada con el fin de confirmar si os encontráis cómodos con la misma y si es suficiente para la lectura de partituras. Después necesitamos unos minutos de ensayo musical para preparar la toma microfónica para grabación y retransmisión.`,
+    testJovenesThird: (d1, t1, d2) => `Las pruebas técnicas tendrán lugar el ${d1}, día del primer concierto, a las ${t1}. El ${d2} no se realizarán pruebas técnicas. Al comienzo de las pruebas, el técnico mostrará a los intérpretes la iluminación preparada con el fin de confirmar si resulta cómoda y suficiente para la lectura de partituras. Después necesitaremos unos minutos de ensayo musical para preparar la toma microfónica para grabación y retransmisión.`,
+  },
+  en: {
+    greeting: n => `Dear ${n},`,
+    introDirect: `I'm Patricia from the technical team, and I'm delighted to greet you.`,
+    introThird: `This is Patricia from the technical team; I'm delighted to hear from you.`,
+    introLineDirect: `We are already preparing for this concert, and to ensure we take your needs into account, I would like to confirm several aspects:`,
+    introLineThird: `We are already preparing for this concert, and to ensure we've taken all the necessary technical requirements into account, I'd like to confirm a few details:`,
+    headingTest: 'Technical rehearsals',
+    headingSchedule: 'Here is a reminder of the schedule:',
+    headingStage: 'Stage layout',
+    headingMovements: 'Programme, stage movements and end of the concert',
+    furnitureDirect: `Please let me know your specific stage furniture needs — chairs, music stands, or any other items you will use — so we can have them ready upon your arrival. To prepare the lighting in advance, it would be great to confirm whether you will use iPads or paper sheet music.`,
+    furnitureThird: `Please let me know their specific stage furniture needs — chairs, music stands, or any other items they will use — so we can have them ready upon their arrival. To prepare the lighting in advance, it would be great to confirm whether they will use iPads or paper sheet music.`,
+    stageAttachDirect: f => `I'm attaching a stage plan showing the standard ${f} setup. Will this be the layout, or do you have another idea? I'm also attaching an image of the standard lighting setup we prepare for this type of concert, which, unless otherwise specified, will be the one we use during the event.`,
+    stageAttachThird: f => `I'm attaching a stage plan showing the standard ${f} setup. Will this be the layout, or do they have another idea? I'm also attaching an image of the standard lighting setup we prepare for this type of concert, which, unless otherwise specified, will be the one we use during the event.`,
+    stageAskDirect: `So that we can plan the venue lighting and the sound recording for the broadcast, we need to know what your stage layout will be. Could you please send me a plan, diagram or sketch of the layout? If there are different positions or templates, please send us drawings of all the options.`,
+    stageAskThird: `So that we can plan the venue lighting and the sound recording for the broadcast, we need to know what their stage layout will be. Could they please send us a plan, diagram or sketch of the layout? If there are different positions or templates, please send us drawings of all the options.`,
+    movementsNoProgramDirect: `It is important for us to know if you plan to leave the stage at any point during the programme and if you plan to perform an encore — and, if so, what it would be — so we can inform the technicians, venue staff, and the announcer.`,
+    movementsNoProgramThird: `It is important for us to know if they plan to leave the stage at any point during the programme and if they plan to perform an encore — and, if so, what it would be — so we can inform the technicians, venue staff, and the announcer.`,
+    movementsProgramIntroDirect: `It is important that we know which performers are involved in each piece, as well as your entrances and exits during the programme, particularly if there are performers who do not take part in a particular piece, so that the technical team can remove the necessary items from the stage if required. It would be a great help if you could indicate the performers involved in each piece below:`,
+    movementsProgramIntroThird: `It is important that we know which performers are involved in each piece, as well as their entrances and exits during the programme, particularly if there are performers who do not take part in a particular piece, so that the technical team can remove the necessary items from the stage if required. It would be a great help if you could indicate the performers involved in each piece below:`,
+    encoreAfterProgramDirect: `Also, please let us know if an encore is planned, and if so, what it will be, so that we can inform the technicians, stage crew and the streaming presenter.`,
+    encoreAfterProgramThird: `Also, please let us know if an encore is planned, and if so, what it will be, so that we can inform the technicians, stage crew and the streaming presenter.`,
+    closingDirect: `I am at your disposal for anything you need regarding lighting, sound, or video for the event.`,
+    closingThird: `I am at your disposal for anything you need regarding lighting, sound, or video for the event.`,
+    signoff: 'Best regards,',
+    testMiercoles: (t) => `On the day of the concert, the lighting technical rehearsals will take place at ${t} alongside RNE's sound checks. At the start of the tests, the technical staff will show the performers the lighting setup to confirm that it is suitable and provides adequate lighting for reading sheet music. Afterward, we will need a few minutes of musical rehearsal to prepare the microphone setup for recording and broadcast.`,
+    testSabadoDirect: (t, early) => `On the day of the concert, sound checks usually take place at ${t}${early ? `, but if there are any changes to the line-up, it would be advisable to bring it forward to ${early}` : ''}. At the start of the rehearsals, the technician will show you the lighting setup to ensure it is comfortable for the performers and provides sufficient light for reading sheet music. Afterwards, we will need a few minutes of musical rehearsal to prepare the microphone for recording and broadcasting.`,
+    testSabadoThird: (t, early) => `On the day of the concert, sound checks usually take place at ${t}${early ? `, but if there are any changes to the line-up, it would be advisable to bring it forward to ${early}` : ''}. At the start of the rehearsals, the technician will show the performers the lighting setup to ensure it is comfortable and provides sufficient light for reading sheet music. Afterwards, we will need a few minutes of musical rehearsal to prepare the microphone for recording and broadcasting.`,
+    testJovenes: (d1, t1, d2) => `The technical rehearsal will take place on ${d1}, the day of the first concert, at ${t1}. There will be no technical rehearsal on ${d2}. At the start of the rehearsal, the technician will show you the lighting setup to confirm that you are comfortable with it and that it is sufficient for reading sheet music. Afterward, we will need a few minutes of musical rehearsal to prepare the microphone setup for recording and broadcast.`,
+    testJovenesThird: (d1, t1, d2) => `The technical rehearsal will take place on ${d1}, the day of the first concert, at ${t1}. There will be no technical rehearsal on ${d2}. At the start of the rehearsal, the technician will show the performers the lighting setup to confirm that they are comfortable with it and that it is sufficient for reading sheet music. Afterward, we will need a few minutes of musical rehearsal to prepare the microphone setup for recording and broadcast.`,
+  }
+};
+
+/* ---------- CONSTRUCCIÓN DEL EMAIL ---------- */
+function val(id){ const el = document.getElementById(id); return el ? el.value.trim() : ''; }
+
+function buildScheduleBlock(lang, cycle){
+  if(cycle === 'miercoles'){
+    const intervalo = val('m_intervalo');
+    const lines = [];
+    lines.push(`${val('m_date')}${lang==='es' ? ', Auditorio' : ', Auditorium'}`);
+    lines.push(lang==='es'
+      ? `${val('m_ensayo_ini')} a ${val('m_ensayo_fin')}. Escenario disponible para ensayo`
+      : `${val('m_ensayo_ini')} to ${val('m_ensayo_fin')}. Available for rehearsal`);
+    const afinacionTipo = val('m_afinacion_tipo');
+    if(afinacionTipo !== 'ninguna'){
+      const labelEs = afinacionTipo === 'clave' ? 'Afinación de clave y montaje técnico' : 'Afinación de piano y montaje técnico';
+      const labelEn = afinacionTipo === 'clave' ? 'Harpsichord tuning and technical set-up' : 'Piano tuning and technical set-up';
+      lines.push(lang==='es'
+        ? `${val('m_afinacion_ini')} a ${val('m_afinacion_fin')}. ${labelEs}`
+        : `${val('m_afinacion_ini')} to ${val('m_afinacion_fin')}. ${labelEn}`);
+    }
+    lines.push(lang==='es'
+      ? `${val('m_prueba_ini')} a ${val('m_prueba_fin')}. Prueba técnica de sonido e iluminación, con RNE y nuestros técnicos`
+      : `${val('m_prueba_ini')} to ${val('m_prueba_fin')}. Lighting check and sound check with Radio and FJM crew`);
+    lines.push(lang==='es' ? `${val('m_liberado')}. Escenario liberado.` : `${val('m_liberado')}: stage cleared`);
+    lines.push(lang==='es' ? `${val('m_puertas')}. Apertura de puertas` : `${val('m_puertas')}: doors open`);
+    lines.push(lang==='es'
+      ? `${val('m_concierto')}. Concierto${intervalo ? ` [${intervalo}]` : ''}`
+      : `${val('m_concierto')}: concert${intervalo ? ` [${intervalo}]` : ''}`);
+    lines.push(lang==='es' ? `${val('m_fin')} aprox. Concierto finalizado` : `${val('m_fin')} approx. Curfew`);
+    return lines.join('\n');
+  }
+  if(cycle === 'jovenes'){
+    const blocks = [];
+    blocks.push(`${val('j1_date')}:`);
+    blocks.push(lang==='es' ? `${val('j1_montaje')}\tMontaje técnico (personal FJM)` : `${val('j1_montaje')}\tTechnical set-up (FJM staff)`);
+    blocks.push(lang==='es' ? `${val('j1_llegada')}\tLlegada de intérpretes` : `${val('j1_llegada')}\tPerformers arrival`);
+    blocks.push(lang==='es' ? `${val('j1_prueba')}\tPrueba técnica` : `${val('j1_prueba')}\tTechnical rehearsal`);
+    blocks.push(lang==='es' ? `${val('j1_liberado')}\tLiberación de espacio escénico` : `${val('j1_liberado')}\tStage cleared`);
+    blocks.push(lang==='es' ? `${val('j1_puertas')}\tApertura de puertas` : `${val('j1_puertas')}\tDoors open`);
+    blocks.push(lang==='es'
+      ? `${val('j1_concierto')}\tCONCIERTO (${val('j1_duracion')} aprox)`
+      : `${val('j1_concierto')}\tCONCERT (approx ${val('j1_duracion')})`);
+    blocks.push('');
+    blocks.push(`${val('j2_date')}:`);
+    blocks.push(lang==='es' ? `${val('j2_libre')}\tAuditorio libre para ensayar` : `${val('j2_libre')}\tAuditorium free for rehearsal`);
+    blocks.push(lang==='es' ? `${val('j2_prueba')}\tPrueba técnica` : `${val('j2_prueba')}\tTechnical rehearsal`);
+    blocks.push(lang==='es' ? `${val('j2_liberado')}\tLiberación de espacio escénico` : `${val('j2_liberado')}\tStage cleared`);
+    blocks.push(lang==='es' ? `${val('j2_puertas')}\tApertura de puertas` : `${val('j2_puertas')}\tDoors open`);
+    blocks.push(lang==='es'
+      ? `${val('j2_concierto')}\tCONCIERTO (${val('j2_duracion')} aprox)`
+      : `${val('j2_concierto')}\tCONCERT (approx ${val('j2_duracion')})`);
+    if(val('j2_fotos')){
+      blocks.push(lang==='es' ? `${val('j2_fotos')}\tSesión de fotos al acabar el concierto` : `${val('j2_fotos')}\tPhoto session after the concert`);
+    }
+    return blocks.join('\n');
+  }
+  return null; // sábado no lleva tabla
+}
+
+function buildEmail(){
+  const lang = state.lang;
+  const type = state.type; // interprete | representante
+  const cycle = cycleSelect.value;
+  const t = T[lang];
+  const direct = type === 'interprete';
+  const names = val('names') || (lang==='es' ? 'todos' : 'All');
+  const formacionName = formacionSelect.value;
+
+  const paras = [];
+
+  paras.push(t.greeting(names));
+  paras.push(direct ? t.introDirect : t.introThird);
+  paras.push(direct ? t.introLineDirect : t.introLineThird);
+
+  // --- Pruebas técnicas ---
+  paras.push(`${t.headingTest}`);
+  if(cycle === 'miercoles'){
+    paras.push(t.testMiercoles(val('m_prueba_ini')));
+  } else if(cycle === 'sabado'){
+    const fn = direct ? t.testSabadoDirect : t.testSabadoThird;
+    paras.push(fn(val('s_prueba'), val('s_prueba_adelantada')));
+  } else if(cycle === 'jovenes'){
+    const fn = direct ? t.testJovenes : t.testJovenesThird;
+    paras.push(fn(val('j1_date'), val('j1_prueba'), val('j2_date')));
+  }
+
+  // --- Horario ---
+  const schedule = buildScheduleBlock(lang, cycle);
+  if(schedule){
+    paras.push(t.headingSchedule);
+    paras.push(schedule);
+  }
+
+  // --- Distribución del escenario ---
+  const unclearLayout = document.getElementById('unclearLayout').checked;
+  paras.push(t.headingStage);
+  if(unclearLayout){
+    paras.push(direct ? t.stageAskDirect : t.stageAskThird);
+  } else {
+    const fn = direct ? t.stageAttachDirect : t.stageAttachThird;
+    paras.push(fn(formacionName.toLowerCase()));
+  }
+  paras.push(direct ? t.furnitureDirect : t.furnitureThird);
+
+  // --- Programa / movimientos ---
+  paras.push(t.headingMovements);
+  const includeProgram = document.getElementById('includeProgram').checked;
+  if(includeProgram){
+    paras.push(direct ? t.movementsProgramIntroDirect : t.movementsProgramIntroThird);
+    const rows = Array.from(document.querySelectorAll('#programList .obra-meta')).map(r=>{
+      const title = r.querySelector('.obra-title').value.trim();
+      const performers = r.querySelector('.obra-performers').value.trim();
+      if(!title && !performers) return null;
+      return `- ${title}${performers ? ` — ${performers}` : ''}`;
+    }).filter(Boolean);
+    if(rows.length) paras.push(rows.join('\n'));
+    paras.push(direct ? t.encoreAfterProgramDirect : t.encoreAfterProgramThird);
+  } else {
+    paras.push(direct ? t.movementsNoProgramDirect : t.movementsNoProgramThird);
+  }
+
+  // --- Notas extra ---
+  const extra = val('extraNotes');
+  if(extra) paras.push(extra);
+
+  // --- Cierre ---
+  paras.push(direct ? t.closingDirect : t.closingThird);
+  paras.push(t.signoff);
+
+  return paras.join('\n\n');
+}
+
+/* ---------- GENERAR ---------- */
+document.getElementById('generateBtn').addEventListener('click', ()=>{
+  const body = buildEmail();
+  document.getElementById('emailBody').textContent = body;
+  document.getElementById('output-card').classList.add('show');
+
+  const attachRow = document.getElementById('attachRow');
+  attachRow.innerHTML = '';
+  const unclearLayout = document.getElementById('unclearLayout').checked;
+
+  if(!unclearLayout){
+    if(lightingCurrentDataUrl){
+      attachRow.appendChild(makeAttachCard(lightingCurrentDataUrl, state.lang==='es' ? 'Iluminación' : 'Lighting', 'iluminacion.png'));
+    }
+    const planoImg = formaciones[formacionSelect.value];
+    if(planoImg){
+      attachRow.appendChild(makeAttachCard(planoImg, state.lang==='es' ? 'Plano de escenario' : 'Stage plan', 'plano.png'));
+    }
+  }
+
+  document.getElementById('output-card').scrollIntoView({behavior:'smooth', block:'start'});
+});
+
+function makeAttachCard(dataUrl, label, filename){
+  const div = document.createElement('div');
+  div.className = 'attach-card';
+  div.innerHTML = `<img src="${dataUrl}"><div class="label">${label}</div>
+    <a class="btn small" download="${filename}" href="${dataUrl}">Descargar</a>`;
+  return div;
+}
+
+/* ---------- COPIAR ---------- */
+document.getElementById('copyBtn').addEventListener('click', ()=>{
+  const text = document.getElementById('emailBody').textContent;
+  navigator.clipboard.writeText(text).then(()=>{
+    const toast = document.getElementById('toast');
+    toast.classList.add('show');
+    setTimeout(()=> toast.classList.remove('show'), 1600);
+  });
+});
+</script>
+</body>
+</html>
