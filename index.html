@@ -835,16 +835,23 @@ function buildCoordinadorSentence(lang, direct, single){
     : ` Our stage coordinator, ${name} (in copy), will accompany and guide the performers through the rehearsal to make sure everything is ready before the concert.`;
 }
 
-function buildManosSentence(lang, direct, single){
+function detectInstrumento(formacionName){
+  const f = (formacionName || '').toLowerCase();
+  return f.includes('clave') ? 'clave' : 'piano';
+}
+
+function buildManosSentence(lang, direct, single, formacionName){
+  const instrumento = detectInstrumento(formacionName);
   if(lang === 'es'){
-    if(!direct) return `Aprovecho para informarles de que en los conciertos de piano de la Fundación mostramos al público del auditorio las manos del intérprete proyectándolas en la pantalla. Hemos comprobado que esto mejora la experiencia para el público y no perturba en ningún momento la concentración de los intérpretes.`;
+    if(!direct) return `Aprovecho para informarles de que en los conciertos de ${instrumento} mostramos al público del auditorio las manos del intérprete proyectándolas en una pantalla. Hemos comprobado que esto mejora la experiencia para el público y no perturba en ningún momento la concentración de los intérpretes.`;
     return single
-      ? `Aprovecho para informarte de que en los conciertos de piano de la Fundación mostramos al público del auditorio las manos del intérprete proyectándolas en la pantalla. Hemos comprobado que esto mejora la experiencia para el público y no perturba en ningún momento la concentración de los intérpretes.`
-      : `Aprovecho para informaros de que en los conciertos de piano de la Fundación mostramos al público del auditorio las manos del intérprete proyectándolas en la pantalla. Hemos comprobado que esto mejora la experiencia para el público y no perturba en ningún momento la concentración de los intérpretes.`;
+      ? `Aprovecho para informarte de que en los conciertos de ${instrumento} mostramos al público del auditorio las manos del intérprete proyectándolas en una pantalla. Hemos comprobado que esto mejora la experiencia para el público y no perturba en ningún momento la concentración de los intérpretes.`
+      : `Aprovecho para informaros de que en los conciertos de ${instrumento} mostramos al público del auditorio las manos del intérprete proyectándolas en una pantalla. Hemos comprobado que esto mejora la experiencia para el público y no perturba en ningún momento la concentración de los intérpretes.`;
   }
+  const instrumentoEn = instrumento === 'clave' ? 'harpsichord' : 'piano';
   return direct
-    ? `I'd also like to let you know that in the Fundación's piano concerts, we project the performer's hands onto the screen for the audience in the auditorium. We've found that this enhances the audience's experience without ever disturbing the performers' concentration.`
-    : `I'd also like to let them know that in the Fundación's piano concerts, we project the performer's hands onto the screen for the audience in the auditorium. We've found that this enhances the audience's experience without ever disturbing the performers' concentration.`;
+    ? `I'd also like to let you know that in ${instrumentoEn} concerts, we project the performer's hands onto a screen for the audience in the auditorium. We've found that this enhances the audience's experience without ever disturbing the performers' concentration.`
+    : `I'd also like to let them know that in ${instrumentoEn} concerts, we project the performer's hands onto a screen for the audience in the auditorium. We've found that this enhances the audience's experience without ever disturbing the performers' concentration.`;
 }
 
 function buildGreeting(lang, single, genero, names){
@@ -912,7 +919,7 @@ function buildEmail(){
   }
   paras.push(pick('furniture'));
   if(document.getElementById('incluirManos').checked){
-    paras.push(buildManosSentence(lang, direct, single));
+    paras.push(buildManosSentence(lang, direct, single, formacionName));
   }
 
   // --- Programa / movimientos ---
