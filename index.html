@@ -205,6 +205,20 @@
           <button type="button" data-val="representante">Representante</button>
         </div>
       </div>
+      <div class="field">
+        <label>Número de destinatarios</label>
+        <div class="seg" id="numSeg">
+          <button type="button" data-val="multiple" class="active">Varios</button>
+          <button type="button" data-val="single">Uno</button>
+        </div>
+      </div>
+      <div class="field" id="generoField" style="display:none;">
+        <label>Género (para el saludo, en español)</label>
+        <div class="seg" id="generoSeg">
+          <button type="button" data-val="f" class="active">Femenino</button>
+          <button type="button" data-val="m">Masculino</button>
+        </div>
+      </div>
     </div>
     <div class="field">
       <label>Nombre(s) del/de los destinatario/s (tal cual quieres que aparezca en el saludo)</label>
@@ -417,7 +431,7 @@ function saveFormaciones(obj){ localStorage.setItem(LS_FORMACIONES, JSON.stringi
 let formaciones = loadFormaciones();
 let lightingCurrentDataUrl = null;
 
-let state = { lang:'es', type:'interprete' };
+let state = { lang:'es', type:'interprete', single:false, genero:'f' };
 
 /* ---------- UI: segmented controls ---------- */
 document.querySelectorAll('#langSeg button').forEach(b=>{
@@ -431,6 +445,19 @@ document.querySelectorAll('#typeSeg button').forEach(b=>{
   b.addEventListener('click', ()=>{
     document.querySelectorAll('#typeSeg button').forEach(x=>x.classList.remove('active'));
     b.classList.add('active'); state.type = b.dataset.val;
+  });
+});
+document.querySelectorAll('#numSeg button').forEach(b=>{
+  b.addEventListener('click', ()=>{
+    document.querySelectorAll('#numSeg button').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active'); state.single = b.dataset.val === 'single';
+    document.getElementById('generoField').style.display = state.single ? 'block' : 'none';
+  });
+});
+document.querySelectorAll('#generoSeg button').forEach(b=>{
+  b.addEventListener('click', ()=>{
+    document.querySelectorAll('#generoSeg button').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active'); state.genero = b.dataset.val;
   });
 });
 
@@ -639,7 +666,17 @@ document.getElementById('addDayBtn').addEventListener('click', addDayBlock);
 addDayBlock(); // primer bloque por defecto
 
 /* ---------- NORMALIZACIÓN DE LÍNEAS DE HORARIO ---------- */
-function normalizeScheduleLine(line){
+function to12h(str){
+  if(!str) return str;
+  return str.replace(/\b([01]?\d|2[0-3]):([0-5]\d)\s*h?\b/gi, (match, hh, mm)=>{
+    let h = parseInt(hh, 10);
+    const suffix = h < 12 ? 'a.m.' : 'p.m.';
+    let h12 = h % 12; if(h12 === 0) h12 = 12;
+    return `${h12}:${mm} ${suffix}`;
+  });
+}
+
+function normalizeScheduleLine(line, lang){
   line = line.trim();
   if(!line) return null;
   // quita viñetas (*, -, •, guiones largos) al principio
@@ -652,6 +689,9 @@ function normalizeScheduleLine(line){
   if(!m) return line; // no hay hora al principio: se deja tal cual
 
   let time = m[1].trim().replace(/\s+/g, ' ').replace(/\.\s*$/, '');
+  if(lang === 'en'){
+    time = to12h(time).replace(/(^|\s)a(\s)/g, '$1to$2');
+  }
   const aprox = m[2] ? ' aprox' : '';
   let desc = (m[3] || '').trim();
   if(desc) desc = desc.charAt(0).toUpperCase() + desc.slice(1);
@@ -686,7 +726,7 @@ function buildScheduleParagraphs(lang){
     const dayText = formatDayHeader(iso, lang);
     const header = dayText ? (venue ? `${dayText}, ${venue}` : dayText) : '';
     const raw = b.querySelector('.day-raw').value;
-    const lines = raw.split('\n').map(normalizeScheduleLine).filter(Boolean);
+    const lines = raw.split('\n').map(line => normalizeScheduleLine(line, lang)).filter(Boolean);
     if(!header && lines.length === 0) return;
     let text = '';
     if(header) text += `§§${header}§§`;
@@ -701,33 +741,45 @@ const T = {
   es: {
     greeting: n => `Estimados/as ${n},`,
     introDirect: `Soy Patricia, del equipo técnico, encantada de saludaros.`,
+    introDirectSingle: `Soy Patricia, del equipo técnico, encantada de saludarte.`,
     introThird: `Soy Patricia, del equipo técnico; es un placer saludarles.`,
     introLineDirect: `Ya estamos preparando este concierto y para asegurarnos de que tenemos en cuenta todas vuestras necesidades técnicas me gustaría confirmar varios aspectos:`,
+    introLineDirectSingle: `Ya estamos preparando este concierto y para asegurarnos de que tenemos en cuenta todas tus necesidades técnicas me gustaría confirmar varios aspectos:`,
     introLineThird: `Ya estamos preparando este concierto y para asegurarnos de que tenemos en cuenta todas las necesidades técnicas de los intérpretes, me gustaría confirmar varios aspectos:`,
     headingTest: 'Pruebas técnicas',
     headingSchedule: 'Recuerdo el plan de trabajo:',
     headingStage: 'Distribución del escenario',
     headingMovements: 'Programa, movimientos escénicos y final del concierto',
     furnitureDirect: `Por favor, ¿podéis concretarme las necesidades de mobiliario escénico: sillas, atriles o cualquier otro elemento que vayáis a utilizar, para poder tenerlo preparado a vuestra llegada? Si necesitáis atriles, ¿traéis partituras en papel o iPad? Esta información nos es útil para poder diseñar iluminación con antelación.`,
+    furnitureDirectSingle: `Por favor, ¿podrías concretarme las necesidades de mobiliario escénico: sillas, atriles o cualquier otro elemento que vayas a utilizar, para poder tenerlo preparado a tu llegada? Si necesitas atriles, ¿traes partituras en papel o iPad? Esta información nos es útil para poder diseñar iluminación con antelación.`,
     furnitureThird: `¿Podríais indicarnos las necesidades de mobiliario escénico de los intérpretes: sillas, atriles u otros elementos que vayan a utilizar, para tenerlo preparado a su llegada? Si necesitan atriles, ¿utilizarán partituras en papel o iPad? Esta información nos resulta útil para diseñar la iluminación con antelación.`,
     stageAttachDirect: f => `Adjunto un plano del escenario con la disposición habitual para ${f}. ¿Vuestra disposición será así o tenéis otra idea? También incluyo una imagen con la iluminación estándar que preparamos para este tipo de conciertos y que, salvo que se indique lo contrario, será la que utilizaremos durante el evento.`,
+    stageAttachDirectSingle: f => `Adjunto un plano del escenario con la disposición habitual para ${f}. ¿Tu disposición será así o tienes otra idea? También incluyo una imagen con la iluminación estándar que preparamos para este tipo de conciertos y que, salvo que se indique lo contrario, será la que utilizaremos durante el evento.`,
     stageAttachThird: f => `Adjunto un plano del escenario con la disposición habitual para ${f}. ¿Será esta la distribución o tienen otra idea? También incluyo una imagen de la iluminación estándar que preparamos para este tipo de conciertos, que salvo indicación contraria será la que utilicemos durante el evento.`,
     stageAskDirect: `Para poder planificar la iluminación de la sala y la toma de sonido para la retransmisión, necesitamos conocer cuál será vuestra disposición en el escenario. ¿Podríais enviarme un plano, esquema o boceto de la distribución? Si tenéis diferentes posiciones o plantillas, enviadnos los dibujos de todas las opciones.`,
+    stageAskDirectSingle: `Para poder planificar la iluminación de la sala y la toma de sonido para la retransmisión, necesitamos conocer cuál será tu disposición en el escenario. ¿Podrías enviarme un plano, esquema o boceto de la distribución? Si tienes diferentes posiciones o plantillas, envíame los dibujos de todas las opciones.`,
     stageAskThird: `Para poder planificar la iluminación de la sala y la toma de sonido para la retransmisión, necesitamos conocer cuál será su disposición en el escenario. ¿Podrían enviarnos un plano, esquema o boceto de la distribución? Si tienen diferentes posiciones o plantillas, envíennos los dibujos de todas las opciones.`,
     movementsNoProgramDirect: `Es importante para nosotros conocer si abandonaréis el escenario entre obras, especialmente si hubiera obras de formación reducida. También si tenéis previsto ofrecer un bis y, en tal caso, cuál sería, para prevenir al personal de sala, técnicos y locutor del streaming.`,
+    movementsNoProgramDirectSingle: `Es importante para nosotros conocer si abandonarás el escenario entre obras, especialmente si hubiera obras de formación reducida. También si tienes previsto ofrecer un bis y, en tal caso, cuál sería, para prevenir al personal de sala, técnicos y locutor del streaming.`,
     movementsNoProgramThird: `Es importante para nosotros saber si está previsto que abandonen el escenario en algún momento del programa y si tienen pensado interpretar un bis y, en tal caso, cuál sería, para poder informar a los técnicos, al personal de sala y al locutor de la retransmisión.`,
     movementsProgramIntroDirect: `Es importante para nosotros conocer qué intérpretes participan en cada obra, así como vuestras entradas y salidas durante el programa, especialmente si alguno de vosotros no interviene en una obra concreta, para que el equipo técnico pueda retirar lo necesario del escenario si hace falta. Nos ayudaría mucho que indicarais quién interviene en cada obra:`,
+    movementsProgramIntroDirectSingle: `Es importante para nosotros conocer qué intérpretes participan en cada obra, así como tus entradas y salidas durante el programa, especialmente si en algún momento no intervienes en una obra concreta, para que el equipo técnico pueda retirar lo necesario del escenario si hace falta. Nos ayudaría mucho que me indicaras quién interviene en cada obra:`,
     movementsProgramIntroThird: `Es importante para nosotros conocer qué intérpretes participan en cada obra, así como sus entradas y salidas durante el programa, especialmente si alguno de ellos no interviene en una obra concreta, para que el equipo técnico pueda retirar lo necesario del escenario si hace falta. Nos ayudaría mucho que nos indicaran quién interviene en cada obra:`,
     encoreAfterProgramDirect: `Además, indicadnos si tenéis previsto ofrecer un bis y, en tal caso, cuál sería, para prevenir al personal de sala, técnicos y locutor del streaming.`,
+    encoreAfterProgramDirectSingle: `Además, indícame si tienes previsto ofrecer un bis y, en tal caso, cuál sería, para prevenir al personal de sala, técnicos y locutor del streaming.`,
     encoreAfterProgramThird: `Además, indíquennos si tienen previsto ofrecer un bis y, en tal caso, cuál sería, para prevenir al personal de sala, técnicos y locutor del streaming.`,
     closingDirect: `Quedo a vuestra disposición para lo que necesitéis en cuanto a iluminación, sonido o vídeo del evento.`,
+    closingDirectSingle: `Quedo a tu disposición para lo que necesites en cuanto a iluminación, sonido o vídeo del evento.`,
     closingThird: `Quedo a su disposición para cualquier aspecto técnico relacionado con la iluminación, el sonido o el vídeo del evento.`,
     signoff: 'Saludos,',
     testMiercolesDirect: (t) => `El día del concierto, las pruebas técnicas tendrán lugar a las ${t} junto con las pruebas de sonido de RNE. Al comienzo de las pruebas, el técnico os mostrará la iluminación preparada con el fin de confirmar si os resulta agradable y suficiente para la lectura de partituras y textos. Después necesitamos unos minutos de ensayo musical y lecturas para preparar la toma microfónica para grabación y retransmisión.`,
+    testMiercolesDirectSingle: (t) => `El día del concierto, las pruebas técnicas tendrán lugar a las ${t} junto con las pruebas de sonido de RNE. Al comienzo de las pruebas, el técnico te mostrará la iluminación preparada con el fin de confirmar si te resulta agradable y suficiente para la lectura de partituras y textos. Después necesitamos unos minutos de ensayo musical y lecturas para preparar la toma microfónica para grabación y retransmisión.`,
     testMiercolesThird: (t) => `El día del concierto, las pruebas técnicas tendrán lugar a las ${t} junto con las pruebas de sonido de RNE. Al comienzo de las pruebas, el técnico mostrará a los intérpretes la iluminación preparada con el fin de confirmar si les resulta agradable y suficiente para la lectura de partituras y textos. Después necesitaremos unos minutos de ensayo musical y lecturas para preparar la toma microfónica para grabación y retransmisión.`,
     testSabadoDirect: (t, early) => `El día del concierto, la prueba técnica tendrá lugar habitualmente a las ${t}${early ? `, aunque si hay cambios en el reparto de intérpretes sería recomendable adelantarla a las ${early}` : ''}. Al comienzo de la prueba, el técnico os mostrará la iluminación preparada para confirmar que os resulta cómoda y que es suficiente para la lectura de partituras. Después necesitaremos unos minutos de ensayo musical para preparar la toma microfónica para grabación y retransmisión.`,
+    testSabadoDirectSingle: (t, early) => `El día del concierto, la prueba técnica tendrá lugar habitualmente a las ${t}${early ? `, aunque si hay cambios en el reparto de intérpretes sería recomendable adelantarla a las ${early}` : ''}. Al comienzo de la prueba, el técnico te mostrará la iluminación preparada para confirmar que te resulta cómoda y que es suficiente para la lectura de partituras. Después necesitaremos unos minutos de ensayo musical para preparar la toma microfónica para grabación y retransmisión.`,
     testSabadoThird: (t, early) => `El día del concierto, la prueba técnica tendrá lugar habitualmente a las ${t}${early ? `, aunque si hay cambios en el reparto de intérpretes sería recomendable adelantarla a las ${early}` : ''}. Al comienzo de la prueba, el técnico mostrará a los intérpretes la iluminación preparada para confirmar que les resulta cómoda y suficiente para la lectura de partituras. Después necesitaremos unos minutos de ensayo musical para preparar la toma microfónica para grabación y retransmisión.`,
     testJovenes: (d1, t1, d2) => `Las pruebas técnicas tendrán lugar el ${d1}, día del primer concierto, a las ${t1}. El ${d2} no se realizarán pruebas técnicas. Al comienzo de las pruebas, el técnico os mostrará la iluminación preparada con el fin de confirmar si os encontráis cómodos con la misma y si es suficiente para la lectura de partituras. Después necesitamos unos minutos de ensayo musical para preparar la toma microfónica para grabación y retransmisión.`,
+    testJovenesSingle: (d1, t1, d2, genero) => `Las pruebas técnicas tendrán lugar el ${d1}, día del primer concierto, a las ${t1}. El ${d2} no se realizarán pruebas técnicas. Al comienzo de las pruebas, el técnico te mostrará la iluminación preparada con el fin de confirmar si te encuentras ${genero === 'm' ? 'cómodo' : 'cómoda'} con la misma y si es suficiente para la lectura de partituras. Después necesitamos unos minutos de ensayo musical para preparar la toma microfónica para grabación y retransmisión.`,
     testJovenesThird: (d1, t1, d2) => `Las pruebas técnicas tendrán lugar el ${d1}, día del primer concierto, a las ${t1}. El ${d2} no se realizarán pruebas técnicas. Al comienzo de las pruebas, el técnico mostrará a los intérpretes la iluminación preparada con el fin de confirmar si resulta cómoda y suficiente para la lectura de partituras. Después necesitaremos unos minutos de ensayo musical para preparar la toma microfónica para grabación y retransmisión.`,
   },
   en: {
@@ -767,30 +819,40 @@ const T = {
 /* ---------- CONSTRUCCIÓN DEL EMAIL ---------- */
 function val(id){ const el = document.getElementById(id); return el ? el.value.trim() : ''; }
 
-function buildCoordinadorSentence(lang, direct){
+function buildCoordinadorSentence(lang, direct, single){
   const name = val('coord_nombre');
   if(!name) return '';
   const genero = val('coord_genero');
   if(lang === 'es'){
     const rol = genero === 'o' ? 'Nuestro coordinador de escenario' : 'Nuestra coordinadora de escenario';
-    return direct
-      ? ` ${rol}, ${name} (en copia), os acompañará y guiará la prueba para que todo quede listo antes del concierto.`
-      : ` ${rol}, ${name} (en copia), acompañará y guiará la prueba junto a los intérpretes para que todo quede listo antes del concierto.`;
+    if(!direct) return ` ${rol}, ${name} (en copia), acompañará y guiará la prueba junto a los intérpretes para que todo quede listo antes del concierto.`;
+    return single
+      ? ` ${rol}, ${name} (en copia), te acompañará y guiará la prueba para que todo quede listo antes del concierto.`
+      : ` ${rol}, ${name} (en copia), os acompañará y guiará la prueba para que todo quede listo antes del concierto.`;
   }
   return direct
     ? ` Our stage coordinator, ${name} (in copy), will accompany and guide you through the rehearsal to make sure everything is ready before the concert.`
     : ` Our stage coordinator, ${name} (in copy), will accompany and guide the performers through the rehearsal to make sure everything is ready before the concert.`;
 }
 
-function buildManosSentence(lang, direct){
+function buildManosSentence(lang, direct, single){
   if(lang === 'es'){
-    return direct
-      ? `Aprovecho para informaros de que en los conciertos de piano de la Fundación mostramos al público del auditorio las manos del intérprete proyectándolas en la pantalla. Hemos comprobado que esto mejora la experiencia para el público y no perturba en ningún momento la concentración de los intérpretes.`
-      : `Aprovecho para informarles de que en los conciertos de piano de la Fundación mostramos al público del auditorio las manos del intérprete proyectándolas en la pantalla. Hemos comprobado que esto mejora la experiencia para el público y no perturba en ningún momento la concentración de los intérpretes.`;
+    if(!direct) return `Aprovecho para informarles de que en los conciertos de piano de la Fundación mostramos al público del auditorio las manos del intérprete proyectándolas en la pantalla. Hemos comprobado que esto mejora la experiencia para el público y no perturba en ningún momento la concentración de los intérpretes.`;
+    return single
+      ? `Aprovecho para informarte de que en los conciertos de piano de la Fundación mostramos al público del auditorio las manos del intérprete proyectándolas en la pantalla. Hemos comprobado que esto mejora la experiencia para el público y no perturba en ningún momento la concentración de los intérpretes.`
+      : `Aprovecho para informaros de que en los conciertos de piano de la Fundación mostramos al público del auditorio las manos del intérprete proyectándolas en la pantalla. Hemos comprobado que esto mejora la experiencia para el público y no perturba en ningún momento la concentración de los intérpretes.`;
   }
   return direct
     ? `I'd also like to let you know that in the Fundación's piano concerts, we project the performer's hands onto the screen for the audience in the auditorium. We've found that this enhances the audience's experience without ever disturbing the performers' concentration.`
     : `I'd also like to let them know that in the Fundación's piano concerts, we project the performer's hands onto the screen for the audience in the auditorium. We've found that this enhances the audience's experience without ever disturbing the performers' concentration.`;
+}
+
+function buildGreeting(lang, single, genero, names){
+  if(lang === 'es'){
+    if(single) return genero === 'm' ? `Estimado ${names},` : `Estimada ${names},`;
+    return `Estimados/as ${names},`;
+  }
+  return `Dear ${names},`;
 }
 
 function buildEmail(){
@@ -799,28 +861,38 @@ function buildEmail(){
   const cycle = cycleSelect.value;
   const t = T[lang];
   const direct = type === 'interprete';
+  const single = lang === 'es' && direct && state.single; // afecta a la conjugación del cuerpo (tú vs vosotros)
+  const genero = state.genero;
   const names = val('names') || (lang==='es' ? 'todos' : 'All');
   const formacionName = formacionSelect.value;
+  const timeVal = (id) => lang === 'en' ? to12h(val(id)) : val(id);
+
+  function pick(base){
+    if(direct){
+      if(single && t[base + 'DirectSingle']) return t[base + 'DirectSingle'];
+      return t[base + 'Direct'];
+    }
+    return t[base + 'Third'];
+  }
 
   const paras = [];
 
-  paras.push(t.greeting(names));
-  paras.push(direct ? t.introDirect : t.introThird);
-  paras.push(direct ? t.introLineDirect : t.introLineThird);
+  paras.push(buildGreeting(lang, state.single, genero, names));
+  paras.push(pick('intro'));
+  paras.push(pick('introLine'));
 
   // --- Pruebas técnicas ---
-  paras.push(`${t.headingTest}`);
+  paras.push(`‡‡${t.headingTest}‡‡`);
   let testParagraph = '';
   if(cycle === 'miercoles'){
-    testParagraph = (direct ? t.testMiercolesDirect : t.testMiercolesThird)(val('m_prueba_ini'));
+    testParagraph = pick('testMiercoles')(timeVal('m_prueba_ini'));
   } else if(cycle === 'sabado'){
-    const fn = direct ? t.testSabadoDirect : t.testSabadoThird;
-    testParagraph = fn(val('s_prueba'), val('s_prueba_adelantada'));
+    testParagraph = pick('testSabado')(timeVal('s_prueba'), timeVal('s_prueba_adelantada'));
   } else if(cycle === 'jovenes'){
-    const fn = direct ? t.testJovenes : t.testJovenesThird;
-    testParagraph = fn(val('j1_date'), val('j1_prueba'), val('j2_date'));
+    const fn = direct ? (single ? t.testJovenesSingle : t.testJovenes) : t.testJovenesThird;
+    testParagraph = fn(val('j1_date'), timeVal('j1_prueba'), val('j2_date'), genero);
   }
-  testParagraph += buildCoordinadorSentence(lang, direct);
+  testParagraph += buildCoordinadorSentence(lang, direct, single);
   paras.push(testParagraph);
 
   // --- Horario ---
@@ -832,23 +904,22 @@ function buildEmail(){
 
   // --- Distribución del escenario ---
   const unclearLayout = document.getElementById('unclearLayout').checked;
-  paras.push(t.headingStage);
+  paras.push(`‡‡${t.headingStage}‡‡`);
   if(unclearLayout){
-    paras.push(direct ? t.stageAskDirect : t.stageAskThird);
+    paras.push(pick('stageAsk'));
   } else {
-    const fn = direct ? t.stageAttachDirect : t.stageAttachThird;
-    paras.push(fn(formacionName.toLowerCase()));
+    paras.push(pick('stageAttach')(formacionName.toLowerCase()));
   }
-  paras.push(direct ? t.furnitureDirect : t.furnitureThird);
+  paras.push(pick('furniture'));
   if(document.getElementById('incluirManos').checked){
-    paras.push(buildManosSentence(lang, direct));
+    paras.push(buildManosSentence(lang, direct, single));
   }
 
   // --- Programa / movimientos ---
-  paras.push(t.headingMovements);
+  paras.push(`‡‡${t.headingMovements}‡‡`);
   const includeProgram = document.getElementById('includeProgram').checked;
   if(includeProgram){
-    paras.push(direct ? t.movementsProgramIntroDirect : t.movementsProgramIntroThird);
+    paras.push(pick('movementsProgramIntro'));
     const rows = Array.from(document.querySelectorAll('#programList .obra-meta')).map(r=>{
       const title = r.querySelector('.obra-title').value.trim();
       const performers = r.querySelector('.obra-performers').value.trim();
@@ -856,9 +927,9 @@ function buildEmail(){
       return `- ${title}${performers ? ` — ${performers}` : ''}`;
     }).filter(Boolean);
     if(rows.length) paras.push(rows.join('\n'));
-    paras.push(direct ? t.encoreAfterProgramDirect : t.encoreAfterProgramThird);
+    paras.push(pick('encoreAfterProgram'));
   } else {
-    paras.push(direct ? t.movementsNoProgramDirect : t.movementsNoProgramThird);
+    paras.push(pick('movementsNoProgram'));
   }
 
   // --- Notas extra ---
@@ -866,7 +937,7 @@ function buildEmail(){
   if(extra) paras.push(extra);
 
   // --- Cierre ---
-  paras.push(direct ? t.closingDirect : t.closingThird);
+  paras.push(pick('closing'));
   paras.push(t.signoff);
 
   return paras.join('\n\n');
@@ -877,7 +948,9 @@ function markedTextToHtml(text){
     .split('\n')
     .map(line=>{
       const escaped = line.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-      return escaped.replace(/§§(.*?)§§/g, '<b><u>$1</u></b>');
+      return escaped
+        .replace(/§§(.*?)§§/g, '<b><u>$1</u></b>')
+        .replace(/‡‡(.*?)‡‡/g, '<b>$1</b>');
     })
     .join('<br>');
 }
@@ -973,6 +1046,8 @@ function getFormSnapshot(){
     cycle: cycleSelect.value,
     lang: state.lang,
     type: state.type,
+    single: state.single,
+    genero: state.genero,
     names: val('names'),
     formacion: formacionSelect.value,
     unclearLayout: document.getElementById('unclearLayout').checked,
@@ -1009,6 +1084,17 @@ function applyFormSnapshot(s){
     b.classList.toggle('active', b.dataset.val === (s.type || 'interprete'));
   });
   state.type = s.type || 'interprete';
+
+  // número de destinatarios y género
+  document.querySelectorAll('#numSeg button').forEach(b=>{
+    b.classList.toggle('active', b.dataset.val === (s.single ? 'single' : 'multiple'));
+  });
+  state.single = !!s.single;
+  document.getElementById('generoField').style.display = state.single ? 'block' : 'none';
+  document.querySelectorAll('#generoSeg button').forEach(b=>{
+    b.classList.toggle('active', b.dataset.val === (s.genero || 'f'));
+  });
+  state.genero = s.genero || 'f';
 
   document.getElementById('names').value = s.names || '';
   if(s.formacion) formacionSelect.value = s.formacion;
