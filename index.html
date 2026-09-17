@@ -375,6 +375,170 @@ La eclosión modernista"></textarea>
 
   <button type="button" class="btn primary" id="generateEscaletaBtn" style="width:100%; padding:13px; font-size:0.95rem;">Generar escaleta (.xlsx)</button>
 
+  <!-- HOJA DE SERVICIO -->
+  <header class="top" style="margin-top:44px;">
+    <div>
+      <h1 style="font-size:1.4rem;">Hoja de servicio</h1>
+      <div class="sub">Documento interno (.docx) para el equipo técnico de la Fundación</div>
+    </div>
+  </header>
+
+  <section class="card">
+    <h2>Datos generales</h2>
+    <div class="row">
+      <div class="field" style="flex:0 0 140px;">
+        <label>Hora (encabezado)</label>
+        <input type="text" id="hs_hora" placeholder="Ej: 18:00">
+      </div>
+      <div class="field">
+        <label>Coordinador/a del departamento (música)</label>
+        <input type="text" id="hs_coordinador_dpto" placeholder="Nombre">
+      </div>
+    </div>
+    <div class="row">
+      <div class="field">
+        <label>Ciclo (nombre de la temporada)</label>
+        <input type="text" id="hs_ciclo" placeholder="Ej: Ravel entre españoles: Falla y Viñes">
+      </div>
+      <div class="field">
+        <label>Acto (título del programa)</label>
+        <input type="text" id="hs_acto" placeholder="Ej: El Quijote, castillos imaginarios">
+      </div>
+    </div>
+    <div class="field">
+      <label>Programa / escaleta (enlace, una vez subida a Drive)</label>
+      <input type="text" id="hs_programa_link" placeholder="https://docs.google.com/spreadsheets/...">
+    </div>
+    <div class="output-hint" style="margin-top:-4px;">Fecha, formato, intérprete/s, disposición de escenario, ensayo técnico, descanso, coordinación de escenario y proyección de manos se toman automáticamente de lo ya rellenado arriba.</div>
+    <div id="hs_entrevista_fields" style="margin-top:14px;">
+      <div class="row">
+        <div class="field">
+          <label>Entrevista (quién entrevista a quién)</label>
+          <input type="text" id="hs_entrevista" placeholder="Ej: Carmen Torreblanca entrevistada por Juan Lucas">
+        </div>
+        <div class="field" style="flex:0 0 200px;">
+          <label>Lugar de la entrevista</label>
+          <input type="text" id="hs_lugar_entrevista" value="SALÓN AZUL">
+        </div>
+      </div>
+      <div class="field">
+        <label>Microfonía entrevista</label>
+        <input type="text" id="hs_microfonia_entrevista" placeholder="Ej: Sennheiser MD421 para entrevistador y entrevistados">
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Materiales y proyecciones</h2>
+    <div id="hs_entrada_publico_fields"></div>
+    <div class="field">
+      <label>Rotulación y sobretitulado</label>
+      <input type="text" id="hs_rotulacion_variable" placeholder="Ej: SI, rotulación de obras (PPT)">
+      <div class="output-hint">Se añade siempre a continuación: "Rótulos de inicio y fin desde la atem".</div>
+    </div>
+    <div class="field">
+      <label>Proyección en sala — rotulación y sobretitulado</label>
+      <input type="text" id="hs_proyeccion_sala_rotulacion" placeholder="Ej: SI, en pantalla pequeña con proyector sobretítulos">
+    </div>
+    <div class="field">
+      <label>Otras proyecciones durante el acto</label>
+      <input type="text" id="hs_otras_proyecciones" placeholder="Ej: NO">
+    </div>
+    <div class="field">
+      <label>Avisos</label>
+      <textarea id="hs_avisos" rows="3"></textarea>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Vídeo</h2>
+    <div class="row">
+      <div class="field"><label>Cámara extra</label><input type="text" id="hs_camara_extra" placeholder="Ej: NO"></div>
+      <div class="field"><label>Montaje</label><input type="text" id="hs_montaje_video"></div>
+      <div class="field"><label>Back up</label><input type="text" id="hs_backup"></div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Sonido</h2>
+    <div class="field">
+      <label>Locutor</label>
+      <input type="text" id="hs_locutor">
+    </div>
+    <div class="row">
+      <div class="field"><label>Rider / microfonía concierto</label><input type="text" id="hs_rider_microfonia"></div>
+      <div class="field"><label>Intervenciones habladas</label><input type="text" id="hs_intervenciones_habladas" placeholder="Ej: seleccionar"></div>
+    </div>
+    <div class="field">
+      <label>Montaje sonido</label>
+      <textarea id="hs_montaje_sonido" rows="2"></textarea>
+    </div>
+    <div class="field">
+      <label>Subida de audio</label>
+      <input type="text" id="hs_subida_audio">
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Luces</h2>
+    <div class="field">
+      <label>Iluminación concierto</label>
+      <input type="text" id="hs_iluminacion_concierto">
+    </div>
+    <div class="field">
+      <label>Partituras</label>
+      <input type="text" id="hs_partituras">
+    </div>
+    <div class="field">
+      <label>Luz sala</label>
+      <textarea id="hs_luz_sala" rows="3"></textarea>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Retransmisión</h2>
+    <div class="row">
+      <div class="field"><label>Salón azul</label><input type="text" id="hs_salon_azul" placeholder="Ej: SI"></div>
+      <div class="field"><label>Streaming</label><input type="text" id="hs_streaming" placeholder="Ej: SI"></div>
+    </div>
+    <div class="field">
+      <label>Cafetería</label>
+      <textarea id="hs_cafeteria" rows="3"></textarea>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Otros</h2>
+    <div class="field">
+      <label>Observaciones programa</label>
+      <textarea id="hs_obs_programa" rows="2"></textarea>
+    </div>
+    <div class="field">
+      <label>Otras observaciones</label>
+      <textarea id="hs_obs_otras" rows="2"></textarea>
+    </div>
+    <div class="field">
+      <label>Vídeos referencia</label>
+      <input type="text" id="hs_videos_referencia">
+    </div>
+    <div class="row">
+      <div class="field">
+        <label>Materiales enviados — enlace</label>
+        <input type="text" id="hs_materiales_link">
+      </div>
+      <div class="field" style="flex:0 0 220px;">
+        <label>Materiales enviados — ruta</label>
+        <input type="text" id="hs_materiales_ruta">
+      </div>
+    </div>
+    <div class="field">
+      <label>Ruta preservación</label>
+      <textarea id="hs_ruta_preservacion" rows="2"></textarea>
+    </div>
+  </section>
+
+  <button type="button" class="btn primary" id="generateHojaServicioBtn" style="width:100%; padding:13px; font-size:0.95rem;">Generar hoja de servicio (.docx)</button>
+
 </div>
 
 <!-- MODAL: gestionar planos -->
@@ -424,6 +588,7 @@ La eclosión modernista"></textarea>
 <div class="toast" id="toast">Copiado</div>
 
 <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/docx@9.7.1/dist/index.iife.js"></script>
 
 <script>
 /* ---------- ESTADO Y PERSISTENCIA ---------- */
@@ -1700,6 +1865,280 @@ document.getElementById('openEscHistorialBtn').addEventListener('click', ()=>{
 });
 document.getElementById('closeEscHistorialBtn').addEventListener('click', ()=>{
   document.getElementById('escHistorialModal').classList.remove('show');
+});
+
+/* =========================================================
+   HOJA DE SERVICIO
+   ========================================================= */
+const HS_DEFAULTS = {
+  entradaPublicoOtros: 'SIN PROYECCIONES NI HILO MUSICAL',
+  entradaPublicoMiercoles: `SI, proyección entrevista en pantalla pequeña
+POR NORMA: proyección entrevista en auditorio en **PANTALLA PEQUEÑA DE PROYECCIÓN CON PROYECCIÓN FRONTAL**
+Los miércoles, ajustamos el proyector frontal (tamaño y foco) para la proyección de la entrevista antes de las 16h y colocamos pantalla en posición de proyección de rótulos/sobretítulos para el comienzo de las pruebas. A partir de las 17:35 podemos bajar la pantalla y ajustar la altura, aunque sigan los músicos ensayando.`,
+  duranteEntrevistaAzul: `**NO SE PROYECTA NADA EN SALÓN AZUL**
+**Una vez finalice la entrevista proyectamos SEÑAL DE AUDITORIO**`,
+  indicacionesIlumEntrevista: 'Iluminación estándar entrevista',
+  avisos: `Ding dong cafetería 5 minutos antes de inicio
+Aviso de móviles coordinado con mantenimiento
+Ding dong en descanso`,
+  subidaAudio: 'audio íntegro, se sube al finalizar el concierto',
+  luzSala: `Quitar golpes de sala durante la prueba técnica para simular la misma luz que en la conferencia. Al acabar el acto, antes de irnos asegurarnos que todos los golpes de sala quedan apagados (el central ha de apagarse desde el mismo lugar en el que se encendió).`,
+  cafeteria: `**Chequear envío a proyector y altavoces**
+Si hay cafetería lo prepara mantenimiento en el momento pero debe estar chequeado.
+**Audio solo** si se llenan los dos salones (confirmar con mantenimiento)`,
+  materialesLink: 'https://www.dropbox.com/sh/bu0unubfimwil19/AAC-1kkekAb4CWgXgjUNehG7a?dl=0',
+  rutaPreservacion: `Media/preservacion/Actos/Videos creamos carpeta con la fecha del acto (AAAA-MM-DD) y metemos dentro Rec5 y zip con materiales (rótulos, ppt, imágenes, etc.)
+**Revisamos posteriormente que la grabación se ha copiado debidamente en media. Marcamos _R después de la fecha en la carpeta del acto preservado.**`,
+  locutorMiercoles: 'SI, desde cuarto de RNE',
+  locutorOtros: 'SI, desde cabina en control',
+  montajeSonidoMiercoles: 'montaje sonido a cargo de técnicos RNE, apoyo con nuestra microfonía para nuestra grabación si lo consideramos necesario'
+};
+
+function fillIfEmpty(id, value){
+  const el = document.getElementById(id);
+  if(el && !el.value) el.value = value;
+}
+
+function computeTemporadaDefault(){
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = now.getMonth() + 1;
+  const startYear = m >= 9 ? y : y - 1;
+  return `${startYear}-${startYear + 1}`;
+}
+
+function renderHojaServicioFields(){
+  const miercoles = cycleSelect.value === 'miercoles';
+  document.getElementById('hs_entrevista_fields').style.display = miercoles ? 'block' : 'none';
+
+  const entradaBox = document.getElementById('hs_entrada_publico_fields');
+  if(miercoles && !document.getElementById('hs_durante_entrevista_azul')){
+    entradaBox.innerHTML = `
+      <div class="field">
+        <label>Entrada de público / durante entrevista en auditorio</label>
+        <textarea id="hs_entrada_publico" rows="4"></textarea>
+      </div>
+      <div class="field">
+        <label>Durante entrevista en salón azul</label>
+        <textarea id="hs_durante_entrevista_azul" rows="2"></textarea>
+      </div>`;
+  } else if(!miercoles && document.getElementById('hs_durante_entrevista_azul')){
+    entradaBox.innerHTML = `
+      <div class="field">
+        <label>Entrada de público</label>
+        <textarea id="hs_entrada_publico" rows="2"></textarea>
+      </div>`;
+  } else if(!document.getElementById('hs_entrada_publico')){
+    entradaBox.innerHTML = `
+      <div class="field">
+        <label>Entrada de público${miercoles ? ' / durante entrevista en auditorio' : ''}</label>
+        <textarea id="hs_entrada_publico" rows="${miercoles ? 4 : 2}"></textarea>
+      </div>${miercoles ? `<div class="field"><label>Durante entrevista en salón azul</label><textarea id="hs_durante_entrevista_azul" rows="2"></textarea></div>` : ''}`;
+  }
+  fillIfEmpty('hs_entrada_publico', miercoles ? HS_DEFAULTS.entradaPublicoMiercoles : HS_DEFAULTS.entradaPublicoOtros);
+  if(miercoles) fillIfEmpty('hs_durante_entrevista_azul', HS_DEFAULTS.duranteEntrevistaAzul);
+
+  fillIfEmpty('hs_avisos', HS_DEFAULTS.avisos);
+  fillIfEmpty('hs_subida_audio', HS_DEFAULTS.subidaAudio);
+  fillIfEmpty('hs_luz_sala', HS_DEFAULTS.luzSala);
+  fillIfEmpty('hs_cafeteria', HS_DEFAULTS.cafeteria);
+  fillIfEmpty('hs_ruta_preservacion', HS_DEFAULTS.rutaPreservacion);
+  fillIfEmpty('hs_materiales_link', HS_DEFAULTS.materialesLink);
+  fillIfEmpty('hs_materiales_ruta', `INFORTREND/actos/capturas/${computeTemporadaDefault()}/1T`);
+  fillIfEmpty('hs_locutor', miercoles ? HS_DEFAULTS.locutorMiercoles : HS_DEFAULTS.locutorOtros);
+  if(miercoles) fillIfEmpty('hs_montaje_sonido', HS_DEFAULTS.montajeSonidoMiercoles);
+  if(miercoles){
+    fillIfEmpty('hs_salon_azul', 'SI');
+    fillIfEmpty('hs_streaming', 'SI');
+    fillIfEmpty('hs_lugar_entrevista', 'SALÓN AZUL');
+  }
+}
+cycleSelect.addEventListener('change', renderHojaServicioFields);
+renderHojaServicioFields();
+
+/* ---------- Utilidades de fecha / nombre de archivo ---------- */
+const HS_MESES_LARGOS = ['ene','feb','mar','abr','may','jun','jul','ago','sept','oct','nov','dic'];
+const HS_MESES_CORTOS = ['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV','DIC'];
+const HS_DIAS_LETRA = ['D','L','M','X','J','V','S']; // getDay(): 0=domingo
+
+function formatFechaHojaServicio(isoDate){
+  if(!isoDate) return '';
+  const [y, m, d] = isoDate.split('-').map(Number);
+  return `${d} ${HS_MESES_LARGOS[m - 1]} ${y}`;
+}
+
+function buildHojaServicioFilename(isoDate, hora, miercoles){
+  let datePart = 'sin fecha';
+  if(isoDate){
+    const [y, m, d] = isoDate.split('-').map(Number);
+    const dateObj = new Date(y, m - 1, d);
+    const letra = HS_DIAS_LETRA[dateObj.getDay()];
+    datePart = `${d} ${HS_MESES_CORTOS[m - 1]} (${letra})`;
+  }
+  const horaNum = (String(hora || '').match(/\d{1,2}/) || [''])[0];
+  const horaPart = horaNum ? ` ${horaNum}H` : '';
+  const tipo = miercoles ? 'CONCIERTOS MIÉRCOLES' : 'CONCIERTOS';
+  return `[${datePart}${horaPart}] Hoja de Servicio ${tipo}.docx`;
+}
+
+/* ---------- Generar y descargar ---------- */
+document.getElementById('generateHojaServicioBtn').addEventListener('click', async ()=>{
+  if(typeof docx === 'undefined'){
+    alert('No se ha podido cargar la librería para generar el Word. Comprueba tu conexión a internet y vuelve a intentarlo.');
+    return;
+  }
+  const btn = document.getElementById('generateHojaServicioBtn');
+  btn.disabled = true;
+  const originalLabel = btn.textContent;
+  btn.textContent = 'Generando…';
+
+  try{
+    const { Document, Packer, Table, TableRow, TableCell, Paragraph, TextRun, WidthType, ShadingType, ExternalHyperlink } = docx;
+    const LABEL_W = 2600, VALUE_W = 6900, TOTAL_W = LABEL_W + VALUE_W;
+
+    function hv(id){ const el = document.getElementById(id); return el ? el.value.trim() : ''; }
+
+    function hsParseRuns(raw){
+      return String(raw || '').split('\n').map(line=>{
+        const parts = line.split(/(\*\*[^*]+\*\*|\*[^*]+\*)/g).filter(p => p !== '');
+        if(parts.length === 0) return [{text:'', bold:false, italic:false}];
+        return parts.map(p=>{
+          if(p.startsWith('**') && p.endsWith('**') && p.length >= 4) return {text:p.slice(2,-2), bold:true, italic:false};
+          if(p.startsWith('*') && p.endsWith('*') && p.length >= 2) return {text:p.slice(1,-1), bold:false, italic:true};
+          return {text:p, bold:false, italic:false};
+        });
+      });
+    }
+    function hsHeaderRow(text){
+      return new TableRow({ children:[ new TableCell({
+        columnSpan: 2, width:{size:TOTAL_W, type:WidthType.DXA},
+        shading: { type: ShadingType.CLEAR, fill: 'D9D9D9' },
+        children: [ new Paragraph({ children:[ new TextRun({text, bold:true}) ] }) ]
+      })]});
+    }
+    function hsFieldRow(label, raw){
+      const paras = hsParseRuns(raw);
+      return new TableRow({ children:[
+        new TableCell({ width:{size:LABEL_W,type:WidthType.DXA}, children:[new Paragraph({children:[new TextRun({text:label, bold:true})]})] }),
+        new TableCell({ width:{size:VALUE_W,type:WidthType.DXA}, children: paras.map(runs => new Paragraph({children: runs.map(r => new TextRun({text:r.text, bold:r.bold, italic:r.italic}))})) })
+      ]});
+    }
+    function hsLinkFieldRow(label, prefix, url, secondLine){
+      const p1 = [ new TextRun({text: prefix}) ];
+      if(url) p1.push(new ExternalHyperlink({ link:url, children:[ new TextRun({text:url, style:'Hyperlink'}) ] }));
+      const children = [ new Paragraph({children:p1}) ];
+      if(secondLine) children.push(new Paragraph({children:[new TextRun({text:secondLine})]}));
+      return new TableRow({ children:[
+        new TableCell({ width:{size:LABEL_W,type:WidthType.DXA}, children:[new Paragraph({children:[new TextRun({text:label, bold:true})]})] }),
+        new TableCell({ width:{size:VALUE_W,type:WidthType.DXA}, children })
+      ]});
+    }
+
+    const cycle = cycleSelect.value;
+    const miercoles = cycle === 'miercoles';
+    const isoDate = escVal('esc_fecha');
+    const fecha = formatFechaHojaServicio(isoDate);
+    const hora = hv('hs_hora');
+    const formacion = formacionSelect.value;
+    const nombresInterpretes = val('names');
+    const coordNombre = val('coord_nombre');
+    const coordGenero = val('coord_genero');
+    const coordinacionEscenario = coordNombre
+      ? `SI, ${coordGenero === 'o' ? 'coordinador' : 'coordinadora'}: ${coordNombre}`
+      : 'sin coordinación';
+    const proyeccionManos = document.getElementById('incluirManos').checked ? 'SI' : 'NO';
+    const descanso = miercoles ? 'SI' : 'NO';
+    const formatoLabel = {miercoles:'CICLOS DE MIÉRCOLES', sabado:'CONCIERTOS DE SÁBADO', jovenes:'JÓVENES INTÉRPRETES'}[cycle];
+    const ensayoTecnico = buildScheduleParagraphs(state.lang || 'es')
+      .map(p => p.replace(/§§(.*?)§§/g, '$1'))
+      .join('\n');
+
+    const rows = [
+      hsHeaderRow('HOJA DE SERVICIO FUNDACIÓN JUAN MARCH'),
+      hsFieldRow('FECHA', `${fecha}${hora ? ' ' + hora : ''}`),
+      hsFieldRow('DEPARTAMENTO', 'MÚSICA'),
+      hsFieldRow('COORDINADOR DPTO', hv('hs_coordinador_dpto')),
+      hsFieldRow('FORMATO', formatoLabel),
+      hsFieldRow('CICLO', hv('hs_ciclo')),
+      hsFieldRow('ACTO', hv('hs_acto')),
+      hsFieldRow('LUGAR', 'Auditorio'),
+      hsFieldRow('ENSAYO TÉCNICO', ensayoTecnico),
+      hsFieldRow('COORDINACIÓN ESCENARIO', coordinacionEscenario),
+      hsHeaderRow('INFORMACIÓN ACTO'),
+      hsFieldRow('INTÉRPRETE/S', nombresInterpretes)
+    ];
+    if(miercoles){
+      rows.push(hsFieldRow('ENTREVISTA', hv('hs_entrevista')));
+      rows.push(hsFieldRow('LUGAR ENTREVISTA', hv('hs_lugar_entrevista')));
+    }
+    rows.push(hsFieldRow('DISPOSICIÓN ESCENARIO', formacion));
+    rows.push(hsLinkFieldRow('PROGRAMA / ESCALETA', '', hv('hs_programa_link'), ''));
+    rows.push(hsFieldRow('DESCANSO', descanso));
+
+    rows.push(hsHeaderRow('MATERIALES/PROYECCIONES'));
+    if(miercoles){
+      rows.push(hsFieldRow('ENTRADA DE PÚBLICO / DURANTE ENTREVISTA EN AUDITORIO', hv('hs_entrada_publico')));
+      rows.push(hsFieldRow('DURANTE ENTREVISTA EN SALÓN AZUL', hv('hs_durante_entrevista_azul')));
+    } else {
+      rows.push(hsFieldRow('ENTRADA DE PÚBLICO', hv('hs_entrada_publico')));
+    }
+    rows.push(hsFieldRow('ROTULACIÓN Y SOBRETITULADO', `${hv('hs_rotulacion_variable')}\nRótulos de inicio y fin desde la atem`));
+    rows.push(hsFieldRow('PROYECCIÓN EN SALA ROTULACIÓN Y SOBRETITULADO', hv('hs_proyeccion_sala_rotulacion')));
+    rows.push(hsFieldRow('OTRAS PROYECCIONES DURANTE EL ACTO', hv('hs_otras_proyecciones')));
+    rows.push(hsFieldRow('PROYECCIÓN DE MANOS', proyeccionManos));
+    rows.push(hsFieldRow('AVISOS', hv('hs_avisos')));
+
+    rows.push(hsHeaderRow('VÍDEO'));
+    rows.push(hsFieldRow('CÁMARA EXTRA', hv('hs_camara_extra')));
+    rows.push(hsFieldRow('MONTAJE', hv('hs_montaje_video')));
+    rows.push(hsFieldRow('BACK UP', hv('hs_backup')));
+
+    rows.push(hsHeaderRow('SONIDO'));
+    if(miercoles) rows.push(hsFieldRow('MICROFONÍA ENTREVISTA', hv('hs_microfonia_entrevista')));
+    rows.push(hsFieldRow('LOCUTOR', hv('hs_locutor')));
+    rows.push(hsFieldRow('RIDER / MICROFONÍA CONCIERTO', hv('hs_rider_microfonia')));
+    rows.push(hsFieldRow('MONTAJE SONIDO', hv('hs_montaje_sonido')));
+    rows.push(hsFieldRow('INTERVENCIONES HABLADAS', hv('hs_intervenciones_habladas')));
+    rows.push(hsFieldRow('SUBIDA DE AUDIO', hv('hs_subida_audio')));
+
+    rows.push(hsHeaderRow('LUCES'));
+    if(miercoles) rows.push(hsFieldRow('INDICACIONES ILUMINACIÓN ENTREVISTA', HS_DEFAULTS.indicacionesIlumEntrevista));
+    rows.push(hsFieldRow(miercoles ? 'INDICACIONES ILUMINACIÓN CONCIERTO' : 'ILUMINACIÓN CONCIERTO', hv('hs_iluminacion_concierto')));
+    rows.push(hsFieldRow('PARTITURAS', hv('hs_partituras')));
+    rows.push(hsFieldRow('LUZ SALA', hv('hs_luz_sala')));
+
+    rows.push(hsHeaderRow('RETRANSMISIÓN'));
+    rows.push(hsFieldRow('SALÓN AZUL', hv('hs_salon_azul')));
+    rows.push(hsFieldRow('CAFETERÍA', hv('hs_cafeteria')));
+    rows.push(hsFieldRow('STREAMING', hv('hs_streaming')));
+
+    rows.push(hsHeaderRow('OTROS'));
+    rows.push(hsFieldRow('OBSERVACIONES PROGRAMA', hv('hs_obs_programa')));
+    rows.push(hsFieldRow('OTRAS OBSERVACIONES', hv('hs_obs_otras')));
+    rows.push(hsLinkFieldRow('MATERIALES ENVIADOS', 'Cartela inicio streaming: ', hv('hs_materiales_link'), `Materiales en ${hv('hs_materiales_ruta')}`));
+    rows.push(hsFieldRow('RUTA PRESERVACIÓN', hv('hs_ruta_preservacion')));
+    rows.push(hsFieldRow('VÍDEOS REFERENCIA', hv('hs_videos_referencia')));
+
+    const table = new Table({ width:{size:TOTAL_W,type:WidthType.DXA}, columnWidths:[LABEL_W, VALUE_W], rows });
+    const document_ = new Document({ sections:[{ children:[table] }] });
+
+    const blob = await Packer.toBlob(document_);
+    const url = URL.createObjectURL(blob);
+    const filename = buildHojaServicioFilename(isoDate, hora, miercoles);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(()=> URL.revokeObjectURL(url), 4000);
+  } catch(err){
+    console.error(err);
+    alert('Ha ocurrido un error generando la hoja de servicio. Revisa los datos e inténtalo de nuevo.');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = originalLabel;
+  }
 });
 
 </script>
