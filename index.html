@@ -46,6 +46,20 @@
     flex: 0 0 auto;
   }
 
+  .tabbar{
+    display:flex; gap: 4px; margin-bottom: 28px; border-bottom: 1px solid var(--border);
+    flex-wrap: wrap;
+  }
+  .tabbar button{
+    background: transparent; border: none; color: var(--muted);
+    padding: 10px 16px; font-size: 0.9rem; cursor: pointer; font-family: inherit;
+    border-bottom: 2px solid transparent; margin-bottom: -1px;
+  }
+  .tabbar button.active{ color: var(--accent); border-bottom-color: var(--accent); font-weight: 600; }
+  .tabbar button:hover:not(.active){ color: var(--text); }
+  .tab-panel{ display:none; }
+  .tab-panel.active{ display:block; }
+
   section.card{
     background: var(--panel);
     border: 1px solid var(--border);
@@ -168,8 +182,8 @@
 
   <header class="top">
     <div>
-      <h1>Email técnico</h1>
-      <div class="sub">Fundación Juan March · comunicación con intérpretes y representantes</div>
+      <h1>Concierto técnico</h1>
+      <div class="sub">Fundación Juan March · email, escaleta y hoja de servicio</div>
     </div>
     <div class="lamp"></div>
   </header>
@@ -179,9 +193,18 @@
     <button type="button" class="btn small ghost" id="openHistorialBtn">🕘 Historial</button>
   </div>
 
-  <!-- CICLO Y CONTEXTO -->
+  <div class="tabbar">
+    <button type="button" class="tab-btn active" data-tab="comunes">Datos comunes</button>
+    <button type="button" class="tab-btn" data-tab="email">Email</button>
+    <button type="button" class="tab-btn" data-tab="escaleta">Escaleta</button>
+    <button type="button" class="tab-btn" data-tab="hoja">Hoja de servicio</button>
+  </div>
+
+  <!-- ====================== TAB: DATOS COMUNES ====================== -->
+  <div class="tab-panel active" id="tab-comunes">
+
   <section class="card">
-    <h2>Contexto del concierto</h2>
+    <h2>Datos del concierto<small>Se usan en el email, la escaleta y la hoja de servicio</small></h2>
     <div class="row">
       <div class="field">
         <label>Ciclo</label>
@@ -191,6 +214,61 @@
           <option value="jovenes">Jóvenes intérpretes</option>
         </select>
       </div>
+      <div class="field" style="flex:0 0 180px;">
+        <label>Fecha</label>
+        <input type="date" id="esc_fecha">
+      </div>
+    </div>
+    <div class="row">
+      <div class="field">
+        <label>Ciclo (nombre de la temporada)</label>
+        <input type="text" id="hs_ciclo" placeholder="Ej: Ravel entre españoles: Falla y Viñes">
+      </div>
+      <div class="field">
+        <label>Acto (título del programa)</label>
+        <input type="text" id="hs_acto" placeholder="Ej: El Quijote, castillos imaginarios">
+      </div>
+    </div>
+    <div class="field">
+      <label>Intérpretes</label>
+      <textarea id="names" rows="2" placeholder="Ej: Aurelio, Luciana y Flor"></textarea>
+    </div>
+    <div class="field">
+      <label>Formación instrumental</label>
+      <div class="row">
+        <select id="formacion" style="flex:1"></select>
+        <button type="button" class="btn small" id="manageBtn" style="flex:0 0 auto">Gestionar planos</button>
+      </div>
+      <div class="plano-preview" id="planoPreview"></div>
+    </div>
+    <div class="row">
+      <div class="field">
+        <label>Coordinador/a de escenario (opcional)</label>
+        <input type="text" id="coord_nombre" placeholder="Nombre">
+      </div>
+      <div class="field" style="flex:0 0 170px;">
+        <label>&nbsp;</label>
+        <select id="coord_genero">
+          <option value="a">Coordinadora</option>
+          <option value="o">Coordinador</option>
+        </select>
+      </div>
+    </div>
+    <div class="checkline">
+      <input type="checkbox" id="incluirManos">
+      <label for="incluirManos" style="margin:0;">Proyección de manos en pantalla (piano solo / clave solo)</label>
+    </div>
+  </section>
+
+  </div>
+  <!-- ====================== /TAB: DATOS COMUNES ====================== -->
+
+  <!-- ====================== TAB: EMAIL ====================== -->
+  <div class="tab-panel" id="tab-email">
+
+  <section class="card">
+    <h2>Destinatario</h2>
+    <div class="row">
       <div class="field">
         <label>Idioma del email</label>
         <div class="seg" id="langSeg">
@@ -220,25 +298,9 @@
         </div>
       </div>
     </div>
-    <div class="field">
-      <label>Nombre(s) del/de los destinatario/s (tal cual quieres que aparezca en el saludo)</label>
-      <input type="text" id="names" placeholder="Ej: Aurelio, Luciana y Flor">
-    </div>
-    <div class="field">
-      <label>Formación instrumental</label>
-      <div class="row">
-        <select id="formacion" style="flex:1"></select>
-        <button type="button" class="btn small" id="manageBtn" style="flex:0 0 auto">Gestionar planos</button>
-      </div>
-      <div class="plano-preview" id="planoPreview"></div>
-    </div>
     <div class="checkline">
       <input type="checkbox" id="unclearLayout">
       <label for="unclearLayout" style="margin:0;">Aún no tengo clara la distribución en el escenario (se lo preguntaré a ellos primero)</label>
-    </div>
-    <div class="checkline">
-      <input type="checkbox" id="incluirManos">
-      <label for="incluirManos" style="margin:0;">Incluir frase sobre proyección de manos en pantalla (piano solo / clave solo)</label>
     </div>
   </section>
 
@@ -246,19 +308,6 @@
   <section class="card">
     <h2>Plan de trabajo<small id="scheduleHint"></small></h2>
     <div id="scheduleFields"></div>
-    <div class="row" style="margin-top:6px;">
-      <div class="field">
-        <label>Coordinador/a de escenario (opcional)</label>
-        <input type="text" id="coord_nombre" placeholder="Nombre">
-      </div>
-      <div class="field" style="flex:0 0 170px;">
-        <label>&nbsp;</label>
-        <select id="coord_genero">
-          <option value="a">Coordinadora</option>
-          <option value="o">Coordinador</option>
-        </select>
-      </div>
-    </div>
     <div class="schedule-block" style="margin-top:18px;">
       <label style="font-weight:600;color:var(--text);margin-bottom:4px;display:block;">Horario detallado</label>
       <div style="color:var(--muted);font-size:0.8rem;margin-bottom:12px;">Pega el horario tal como te lo envíe el coordinador — se reformatea automáticamente a tu estilo. Revísalo antes de enviarlo. Añade un segundo día si el concierto lo requiere.</div>
@@ -312,38 +361,13 @@
     <div class="attach-row" id="attachRow"></div>
   </section>
 
-  <!-- ESCALETA -->
-  <header class="top" style="margin-top:44px;">
-    <div>
-      <h1 style="font-size:1.4rem;">Escaleta</h1>
-      <div class="sub">Documento técnico de sala (.xlsx), mismo código de colores que tus escaletas actuales</div>
-    </div>
-  </header>
-
-  <div class="row" style="margin:-10px 0 22px;">
-    <button type="button" class="btn small" id="saveEscDraftBtn">💾 Guardar borrador</button>
-    <button type="button" class="btn small ghost" id="openEscHistorialBtn">🕘 Historial</button>
   </div>
+  <!-- ====================== /TAB: EMAIL ====================== -->
 
-  <section class="card">
-    <h2>Encabezado</h2>
-    <div class="row">
-      <div class="field" style="flex:0 0 200px;">
-        <label>Fecha del concierto</label>
-        <input type="date" id="esc_fecha">
-      </div>
-    </div>
-    <div class="field">
-      <label>Ciclo / título del programa (una línea por renglón, tal como debe aparecer)</label>
-      <textarea id="esc_ciclo_titulo" rows="3" placeholder="CICLOS DE MIÉRCOLES
-A cuatro manos
-La eclosión modernista"></textarea>
-    </div>
-    <div class="field">
-      <label>Intérpretes</label>
-      <textarea id="esc_interpretes" rows="2" placeholder="Dúo Del Valle. Luis del Valle y Víctor del Valle, piano"></textarea>
-    </div>
-  </section>
+  <!-- ====================== TAB: ESCALETA ====================== -->
+  <div class="tab-panel" id="tab-escaleta">
+
+  <div class="sub" style="margin:-10px 0 22px;">Documento técnico de sala (.xlsx), mismo código de colores que tus escaletas actuales</div>
 
   <section class="card">
     <h2>Bloque de inicio<small id="escPreHint"></small></h2>
@@ -375,13 +399,13 @@ La eclosión modernista"></textarea>
 
   <button type="button" class="btn primary" id="generateEscaletaBtn" style="width:100%; padding:13px; font-size:0.95rem;">Generar escaleta (.xlsx)</button>
 
-  <!-- HOJA DE SERVICIO -->
-  <header class="top" style="margin-top:44px;">
-    <div>
-      <h1 style="font-size:1.4rem;">Hoja de servicio</h1>
-      <div class="sub">Documento interno (.docx) para el equipo técnico de la Fundación</div>
-    </div>
-  </header>
+  </div>
+  <!-- ====================== /TAB: ESCALETA ====================== -->
+
+  <!-- ====================== TAB: HOJA DE SERVICIO ====================== -->
+  <div class="tab-panel" id="tab-hoja">
+
+  <div class="sub" style="margin:-10px 0 22px;">Documento interno (.docx) para el equipo técnico de la Fundación</div>
 
   <section class="card">
     <h2>Datos generales</h2>
@@ -395,21 +419,11 @@ La eclosión modernista"></textarea>
         <input type="text" id="hs_coordinador_dpto" placeholder="Nombre">
       </div>
     </div>
-    <div class="row">
-      <div class="field">
-        <label>Ciclo (nombre de la temporada)</label>
-        <input type="text" id="hs_ciclo" placeholder="Ej: Ravel entre españoles: Falla y Viñes">
-      </div>
-      <div class="field">
-        <label>Acto (título del programa)</label>
-        <input type="text" id="hs_acto" placeholder="Ej: El Quijote, castillos imaginarios">
-      </div>
-    </div>
     <div class="field">
       <label>Programa / escaleta (enlace, una vez subida a Drive)</label>
       <input type="text" id="hs_programa_link" placeholder="https://docs.google.com/spreadsheets/...">
     </div>
-    <div class="output-hint" style="margin-top:-4px;">Fecha, formato, intérprete/s, disposición de escenario, ensayo técnico, descanso, coordinación de escenario y proyección de manos se toman automáticamente de lo ya rellenado arriba.</div>
+    <div class="output-hint" style="margin-top:-4px;">Fecha, ciclo, acto, formato, intérprete/s, disposición de escenario, ensayo técnico, descanso, coordinación de escenario y proyección de manos se toman automáticamente de "Datos comunes".</div>
     <div id="hs_entrevista_fields" style="margin-top:14px;">
       <div class="row">
         <div class="field">
@@ -539,6 +553,9 @@ La eclosión modernista"></textarea>
 
   <button type="button" class="btn primary" id="generateHojaServicioBtn" style="width:100%; padding:13px; font-size:0.95rem;">Generar hoja de servicio (.docx)</button>
 
+  </div>
+  <!-- ====================== /TAB: HOJA DE SERVICIO ====================== -->
+
 </div>
 
 <!-- MODAL: gestionar planos -->
@@ -565,22 +582,10 @@ La eclosión modernista"></textarea>
 <div class="modal-backdrop" id="historialModal">
   <div class="modal">
     <h3>Historial de borradores</h3>
-    <div class="output-hint" style="margin:-4px 0 12px;">Guarda el estado del formulario para retomarlo más tarde. Las imágenes (iluminación) no se guardan — tendrás que volver a subirlas.</div>
+    <div class="output-hint" style="margin:-4px 0 12px;">Guarda el estado completo (email, escaleta y hoja de servicio) para retomarlo más tarde. Las imágenes (iluminación) no se guardan — tendrás que volver a subirlas.</div>
     <div class="manage-list" id="historialList"></div>
     <div style="text-align:right; margin-top:14px;">
       <button class="btn small" id="closeHistorialBtn">Cerrar</button>
-    </div>
-  </div>
-</div>
-
-<!-- MODAL: historial de borradores de escaleta -->
-<div class="modal-backdrop" id="escHistorialModal">
-  <div class="modal">
-    <h3>Historial de borradores (escaleta)</h3>
-    <div class="output-hint" style="margin:-4px 0 12px;">Guarda el estado de la escaleta para retomarla más tarde.</div>
-    <div class="manage-list" id="escHistorialList"></div>
-    <div style="text-align:right; margin-top:14px;">
-      <button class="btn small" id="closeEscHistorialBtn">Cerrar</button>
     </div>
   </div>
 </div>
@@ -615,6 +620,10 @@ let lightingCurrentDataUrl = null;
 
 let state = { lang:'es', type:'interprete', single:false, genero:'f' };
 
+function getFormatoLabel(cycle){
+  return {miercoles:'CICLOS DE MIÉRCOLES', sabado:'CONCIERTOS DE SÁBADO', jovenes:'JÓVENES INTÉRPRETES'}[cycle] || '';
+}
+
 /* ---------- UI: segmented controls ---------- */
 document.querySelectorAll('#langSeg button').forEach(b=>{
   b.addEventListener('click', ()=>{
@@ -640,6 +649,17 @@ document.querySelectorAll('#generoSeg button').forEach(b=>{
   b.addEventListener('click', ()=>{
     document.querySelectorAll('#generoSeg button').forEach(x=>x.classList.remove('active'));
     b.classList.add('active'); state.genero = b.dataset.val;
+  });
+});
+
+/* ---------- PESTAÑAS ---------- */
+document.querySelectorAll('.tab-btn').forEach(b=>{
+  b.addEventListener('click', ()=>{
+    document.querySelectorAll('.tab-btn').forEach(x=>x.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+    b.classList.add('active');
+    document.getElementById('tab-' + b.dataset.tab).classList.add('active');
+    window.scrollTo({top:0, behavior:'smooth'});
   });
 });
 
@@ -1231,14 +1251,33 @@ function getFormSnapshot(){
     title: r.querySelector('.obra-title').value,
     performers: r.querySelector('.obra-performers').value
   }));
-  return {
+  const escItems = Array.from(document.querySelectorAll('#escaletaObras > .esc-item')).map(item=>{
+    if(item.classList.contains('esc-descanso')){
+      return { type:'descanso', duracion: item.querySelector('.esc-descanso-duracion').value };
+    }
+    return {
+      type:'obra',
+      texto: item.querySelector('.esc-obra-texto').value,
+      formacion: item.querySelector('.esc-obra-formacion').value
+    };
+  });
+  const data = {
+    // --- compartidos ---
     cycle: cycleSelect.value,
+    esc_fecha: escVal('esc_fecha'),
+    hs_ciclo: val('hs_ciclo'),
+    hs_acto: val('hs_acto'),
+    names: val('names'),
+    formacion: formacionSelect.value,
+    coordNombre: val('coord_nombre'),
+    coordGenero: val('coord_genero'),
+    incluirManos: document.getElementById('incluirManos').checked,
+
+    // --- email ---
     lang: state.lang,
     type: state.type,
     single: state.single,
     genero: state.genero,
-    names: val('names'),
-    formacion: formacionSelect.value,
     unclearLayout: document.getElementById('unclearLayout').checked,
     m_prueba_ini: val('m_prueba_ini'),
     s_prueba: val('s_prueba'),
@@ -1250,10 +1289,24 @@ function getFormSnapshot(){
     includeProgram: document.getElementById('includeProgram').checked,
     programRows,
     extraNotes: val('extraNotes'),
-    coordNombre: val('coord_nombre'),
-    coordGenero: val('coord_genero'),
-    incluirManos: document.getElementById('incluirManos').checked
+
+    // --- escaleta ---
+    esc_t_carta: escVal('esc_t_carta'),
+    esc_t_cartela: escVal('esc_t_cartela'),
+    esc_t_puertas: escVal('esc_t_puertas'),
+    esc_duracion_entrevista: escVal('esc_duracion_entrevista'),
+    esc_t_dingdong: escVal('esc_t_dingdong'),
+    esc_t_locutor: escVal('esc_t_locutor'),
+    esc_t_aviso: escVal('esc_t_aviso'),
+    escItems,
+    esc_bis: escVal('esc_bis'),
+    esc_fotos: escVal('esc_fotos')
   };
+  HS_FIELD_IDS.forEach(id=>{
+    const el = document.getElementById(id);
+    if(el) data[id] = el.value;
+  });
+  return data;
 }
 
 function applyFormSnapshot(s){
@@ -1261,6 +1314,7 @@ function applyFormSnapshot(s){
   cycleSelect.value = s.cycle || 'miercoles';
   renderScheduleFields();
   renderEscaletaPreBlock();
+  renderHojaServicioFields();
 
   // idioma
   document.querySelectorAll('#langSeg button').forEach(b=>{
@@ -1285,9 +1339,16 @@ function applyFormSnapshot(s){
   });
   state.genero = s.genero || 'f';
 
+  // --- compartidos ---
+  document.getElementById('esc_fecha').value = s.esc_fecha || '';
+  document.getElementById('hs_ciclo').value = s.hs_ciclo || '';
+  document.getElementById('hs_acto').value = s.hs_acto || '';
   document.getElementById('names').value = s.names || '';
   if(s.formacion) formacionSelect.value = s.formacion;
   renderPlanoPreview();
+  document.getElementById('coord_nombre').value = s.coordNombre || '';
+  document.getElementById('coord_genero').value = s.coordGenero || 'a';
+  document.getElementById('incluirManos').checked = !!s.incluirManos;
 
   document.getElementById('unclearLayout').checked = !!s.unclearLayout;
   document.getElementById('unclearLayout').dispatchEvent(new Event('change'));
@@ -1325,9 +1386,37 @@ function applyFormSnapshot(s){
   });
 
   document.getElementById('extraNotes').value = s.extraNotes || '';
-  document.getElementById('coord_nombre').value = s.coordNombre || '';
-  document.getElementById('coord_genero').value = s.coordGenero || 'a';
-  document.getElementById('incluirManos').checked = !!s.incluirManos;
+
+  // --- escaleta ---
+  setIfExists('esc_t_carta', s.esc_t_carta);
+  setIfExists('esc_t_cartela', s.esc_t_cartela);
+  setIfExists('esc_t_puertas', s.esc_t_puertas);
+  setIfExists('esc_duracion_entrevista', s.esc_duracion_entrevista);
+  setIfExists('esc_t_dingdong', s.esc_t_dingdong);
+  setIfExists('esc_t_locutor', s.esc_t_locutor);
+  setIfExists('esc_t_aviso', s.esc_t_aviso);
+
+  const escBox = document.getElementById('escaletaObras');
+  escBox.innerHTML = '';
+  (s.escItems && s.escItems.length ? s.escItems : [{type:'obra'}]).forEach(it=>{
+    if(it.type === 'descanso'){
+      addDescansoItem();
+      escBox.lastElementChild.querySelector('.esc-descanso-duracion').value = it.duracion || '';
+    } else {
+      addObraItem();
+      const item = escBox.lastElementChild;
+      item.querySelector('.esc-obra-texto').value = it.texto || '';
+      item.querySelector('.esc-obra-formacion').value = it.formacion || '';
+    }
+  });
+  setIfExists('esc_bis', s.esc_bis);
+  setIfExists('esc_fotos', s.esc_fotos);
+
+  // --- hoja de servicio ---
+  HS_FIELD_IDS.forEach(id=>{
+    const el = document.getElementById(id);
+    if(el && s[id] !== undefined) el.value = s[id];
+  });
 }
 
 function historialLabel(s){
@@ -1678,8 +1767,9 @@ document.getElementById('generateEscaletaBtn').addEventListener('click', async (
     const locucionLabel = miercoles ? 'Locución RNE' : 'Locución';
 
     const fechaTexto = formatFechaLarga(escVal('esc_fecha')) || escVal('esc_fecha');
-    const cicloTexto = escVal('esc_ciclo_titulo');
-    const interpretesTexto = escVal('esc_interpretes');
+    const cicloLineas = [getFormatoLabel(cycleSelect.value), escVal('hs_ciclo'), escVal('hs_acto')].filter(Boolean);
+    const cicloTexto = cicloLineas.join('\n');
+    const interpretesTexto = val('names');
 
     escAddMergedHeaderRow(ws, fechaTexto);
     escAddMergedHeaderRow(ws, cicloTexto);
@@ -1728,145 +1818,6 @@ document.getElementById('generateEscaletaBtn').addEventListener('click', async (
 });
 
 /* ---------- HISTORIAL DE BORRADORES (escaleta) ---------- */
-const LS_HISTORIAL_ESC = 'et_historial_escaleta_v1';
-const HISTORIAL_ESC_MAX = 20;
-
-function loadEscHistorial(){
-  try{ return JSON.parse(localStorage.getItem(LS_HISTORIAL_ESC) || '[]'); }
-  catch(err){ return []; }
-}
-function saveEscHistorial(list){ localStorage.setItem(LS_HISTORIAL_ESC, JSON.stringify(list)); }
-
-function getEscFormSnapshot(){
-  const items = Array.from(document.querySelectorAll('#escaletaObras > .esc-item')).map(item=>{
-    if(item.classList.contains('esc-descanso')){
-      return { type:'descanso', duracion: item.querySelector('.esc-descanso-duracion').value };
-    }
-    return {
-      type:'obra',
-      texto: item.querySelector('.esc-obra-texto').value,
-      formacion: item.querySelector('.esc-obra-formacion').value
-    };
-  });
-  return {
-    cycle: cycleSelect.value,
-    esc_fecha: escVal('esc_fecha'),
-    esc_ciclo_titulo: escVal('esc_ciclo_titulo'),
-    esc_interpretes: escVal('esc_interpretes'),
-    esc_t_carta: escVal('esc_t_carta'),
-    esc_t_cartela: escVal('esc_t_cartela'),
-    esc_t_puertas: escVal('esc_t_puertas'),
-    esc_duracion_entrevista: escVal('esc_duracion_entrevista'),
-    esc_t_dingdong: escVal('esc_t_dingdong'),
-    esc_t_locutor: escVal('esc_t_locutor'),
-    esc_t_aviso: escVal('esc_t_aviso'),
-    items,
-    esc_bis: escVal('esc_bis'),
-    esc_fotos: escVal('esc_fotos')
-  };
-}
-
-function applyEscFormSnapshot(s){
-  cycleSelect.value = s.cycle || 'miercoles';
-  renderScheduleFields();
-  renderEscaletaPreBlock();
-
-  const setIfExists = (id, v)=>{ const el = document.getElementById(id); if(el) el.value = v || ''; };
-  document.getElementById('esc_fecha').value = s.esc_fecha || '';
-  document.getElementById('esc_ciclo_titulo').value = s.esc_ciclo_titulo || '';
-  document.getElementById('esc_interpretes').value = s.esc_interpretes || '';
-  setIfExists('esc_t_carta', s.esc_t_carta);
-  setIfExists('esc_t_cartela', s.esc_t_cartela);
-  setIfExists('esc_t_puertas', s.esc_t_puertas);
-  setIfExists('esc_duracion_entrevista', s.esc_duracion_entrevista);
-  setIfExists('esc_t_dingdong', s.esc_t_dingdong);
-  setIfExists('esc_t_locutor', s.esc_t_locutor);
-  setIfExists('esc_t_aviso', s.esc_t_aviso);
-
-  const box = document.getElementById('escaletaObras');
-  box.innerHTML = '';
-  (s.items && s.items.length ? s.items : [{type:'obra'}]).forEach(it=>{
-    if(it.type === 'descanso'){
-      addDescansoItem();
-      box.lastElementChild.querySelector('.esc-descanso-duracion').value = it.duracion || '';
-    } else {
-      addObraItem();
-      const item = box.lastElementChild;
-      item.querySelector('.esc-obra-texto').value = it.texto || '';
-      item.querySelector('.esc-obra-formacion').value = it.formacion || '';
-    }
-  });
-
-  document.getElementById('esc_bis').value = s.esc_bis || '';
-  document.getElementById('esc_fotos').value = s.esc_fotos || '';
-}
-
-function escHistorialLabel(s){
-  const cycleNames = {miercoles:'Miércoles', sabado:'Sábado', jovenes:'Jóvenes intérpretes'};
-  const parts = [cycleNames[s.cycle] || s.cycle];
-  if(s.esc_fecha) parts.push(s.esc_fecha);
-  const firstLine = (s.esc_ciclo_titulo || '').split('\n')[0];
-  if(firstLine) parts.push(firstLine);
-  return parts.join(' — ');
-}
-
-function renderEscHistorialList(){
-  const list = document.getElementById('escHistorialList');
-  const items = loadEscHistorial();
-  if(!items.length){
-    list.innerHTML = `<div class="output-hint" style="margin:8px 0;">Todavía no has guardado ningún borrador de escaleta.</div>`;
-    return;
-  }
-  list.innerHTML = '';
-  items.forEach(entry=>{
-    const row = document.createElement('div');
-    row.className = 'manage-item';
-    const fecha = new Date(entry.savedAt).toLocaleString('es-ES', {dateStyle:'short', timeStyle:'short'});
-    row.innerHTML = `
-      <div class="name">${escHistorialLabel(entry.data)}<br><span style="color:var(--muted);font-size:0.75rem;">${fecha}</span></div>
-      <button class="btn small" data-load="${entry.id}">Cargar</button>
-      <button class="btn small ghost" data-del="${entry.id}">Eliminar</button>`;
-    list.appendChild(row);
-  });
-  list.querySelectorAll('[data-load]').forEach(btn=>{
-    btn.addEventListener('click', ()=>{
-      const items2 = loadEscHistorial();
-      const entry = items2.find(e => e.id === btn.dataset.load);
-      if(entry){
-        applyEscFormSnapshot(entry.data);
-        document.getElementById('escHistorialModal').classList.remove('show');
-      }
-    });
-  });
-  list.querySelectorAll('[data-del]').forEach(btn=>{
-    btn.addEventListener('click', ()=>{
-      const items2 = loadEscHistorial().filter(e => e.id !== btn.dataset.del);
-      saveEscHistorial(items2);
-      renderEscHistorialList();
-    });
-  });
-}
-
-document.getElementById('saveEscDraftBtn').addEventListener('click', ()=>{
-  const items = loadEscHistorial();
-  const entry = { id: 'he' + Date.now(), savedAt: Date.now(), data: getEscFormSnapshot() };
-  items.unshift(entry);
-  while(items.length > HISTORIAL_ESC_MAX) items.pop();
-  saveEscHistorial(items);
-  const toast = document.getElementById('toast');
-  toast.textContent = 'Borrador guardado';
-  toast.classList.add('show');
-  setTimeout(()=>{ toast.classList.remove('show'); toast.textContent = 'Copiado'; }, 1600);
-});
-
-document.getElementById('openEscHistorialBtn').addEventListener('click', ()=>{
-  renderEscHistorialList();
-  document.getElementById('escHistorialModal').classList.add('show');
-});
-document.getElementById('closeEscHistorialBtn').addEventListener('click', ()=>{
-  document.getElementById('escHistorialModal').classList.remove('show');
-});
-
 /* =========================================================
    HOJA DE SERVICIO
    ========================================================= */
@@ -2048,7 +1999,7 @@ document.getElementById('generateHojaServicioBtn').addEventListener('click', asy
       : 'sin coordinación';
     const proyeccionManos = document.getElementById('incluirManos').checked ? 'SI' : 'NO';
     const descanso = miercoles ? 'SI' : 'NO';
-    const formatoLabel = {miercoles:'CICLOS DE MIÉRCOLES', sabado:'CONCIERTOS DE SÁBADO', jovenes:'JÓVENES INTÉRPRETES'}[cycle];
+    const formatoLabel = getFormatoLabel(cycle);
     const ensayoTecnico = buildScheduleParagraphs(state.lang || 'es')
       .map(p => p.replace(/§§(.*?)§§/g, '$1'))
       .join('\n');
@@ -2140,6 +2091,19 @@ document.getElementById('generateHojaServicioBtn').addEventListener('click', asy
     btn.textContent = originalLabel;
   }
 });
+
+/* ---------- Campos de la hoja de servicio (para el historial unificado) ---------- */
+const HS_FIELD_IDS = [
+  'hs_hora','hs_coordinador_dpto','hs_programa_link',
+  'hs_entrevista','hs_lugar_entrevista','hs_microfonia_entrevista',
+  'hs_entrada_publico','hs_durante_entrevista_azul',
+  'hs_rotulacion_variable','hs_proyeccion_sala_rotulacion','hs_otras_proyecciones','hs_avisos',
+  'hs_camara_extra','hs_montaje_video','hs_backup',
+  'hs_locutor','hs_rider_microfonia','hs_intervenciones_habladas','hs_montaje_sonido','hs_subida_audio',
+  'hs_iluminacion_concierto','hs_partituras','hs_luz_sala',
+  'hs_salon_azul','hs_streaming','hs_cafeteria',
+  'hs_obs_programa','hs_obs_otras','hs_videos_referencia','hs_materiales_link','hs_materiales_ruta','hs_ruta_preservacion'
+];
 
 </script>
 </body>
