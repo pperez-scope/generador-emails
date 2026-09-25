@@ -191,6 +191,7 @@
   <div class="row" style="margin:-10px 0 22px;">
     <button type="button" class="btn small" id="saveDraftBtn">💾 Guardar borrador</button>
     <button type="button" class="btn small ghost" id="openHistorialBtn">🕘 Historial</button>
+    <button type="button" class="btn small ghost" id="newConcertBtn">🆕 Nuevo concierto</button>
   </div>
 
   <div class="tabbar">
@@ -1620,6 +1621,12 @@ document.getElementById('closeHistorialBtn').addEventListener('click', ()=>{
   document.getElementById('historialModal').classList.remove('show');
 });
 
+document.getElementById('newConcertBtn').addEventListener('click', ()=>{
+  if(confirm('¿Empezar un concierto nuevo? Se perderán los datos actuales que no hayas guardado como borrador (los planos, la URL del traductor y el historial de borradores no se ven afectados).')){
+    location.reload();
+  }
+});
+
 /* =========================================================
    ESCALETA
    ========================================================= */
@@ -2000,13 +2007,18 @@ Si hay cafetería lo prepara mantenimiento en el momento pero debe estar chequea
   rutaPreservacion: `Media/preservacion/Actos/Videos creamos carpeta con la fecha del acto (AAAA-MM-DD) y metemos dentro Rec5 y zip con materiales (rótulos, ppt, imágenes, etc.)
 **Revisamos posteriormente que la grabación se ha copiado debidamente en media. Marcamos _R después de la fecha en la carpeta del acto preservado.**`,
   locutorMiercoles: 'SI, desde cuarto de RNE',
-  locutorOtros: 'SI, desde cabina en control',
+  locutorOtros: 'SI, desde cabina de traducción en control',
   montajeSonidoMiercoles: 'montaje sonido a cargo de técnicos RNE, apoyo con nuestra microfonía para nuestra grabación si lo consideramos necesario'
 };
 
 function fillIfEmpty(id, value){
   const el = document.getElementById(id);
   if(el && !el.value) el.value = value;
+}
+
+function forceSet(id, value){
+  const el = document.getElementById(id);
+  if(el) el.value = value;
 }
 
 function computeTemporadaDefault(){
@@ -2048,7 +2060,7 @@ function renderHojaServicioFields(){
   fillIfEmpty('hs_entrada_publico', miercoles ? HS_DEFAULTS.entradaPublicoMiercoles : HS_DEFAULTS.entradaPublicoOtros);
   if(miercoles) fillIfEmpty('hs_durante_entrevista_azul', HS_DEFAULTS.duranteEntrevistaAzul);
 
-  fillIfEmpty('hs_hora', miercoles ? ESC_PRE_DEFAULTS.miercoles.puertas : ESC_PRE_DEFAULTS.otros.puertas);
+  forceSet('hs_hora', miercoles ? '18:00' : '12:00');
   fillIfEmpty('hs_avisos', HS_DEFAULTS.avisos);
   fillIfEmpty('hs_subida_audio', HS_DEFAULTS.subidaAudio);
   fillIfEmpty('hs_luz_sala', HS_DEFAULTS.luzSala);
@@ -2056,12 +2068,12 @@ function renderHojaServicioFields(){
   fillIfEmpty('hs_ruta_preservacion', HS_DEFAULTS.rutaPreservacion);
   fillIfEmpty('hs_materiales_link', HS_DEFAULTS.materialesLink);
   fillIfEmpty('hs_materiales_ruta', `INFORTREND/actos/capturas/${computeTemporadaDefault()}/1T`);
-  fillIfEmpty('hs_locutor', miercoles ? HS_DEFAULTS.locutorMiercoles : HS_DEFAULTS.locutorOtros);
-  if(miercoles) fillIfEmpty('hs_montaje_sonido', HS_DEFAULTS.montajeSonidoMiercoles);
+  forceSet('hs_locutor', miercoles ? HS_DEFAULTS.locutorMiercoles : HS_DEFAULTS.locutorOtros);
+  forceSet('hs_montaje_sonido', miercoles ? HS_DEFAULTS.montajeSonidoMiercoles : '');
+  forceSet('hs_salon_azul', miercoles ? 'SI' : '');
+  forceSet('hs_streaming', miercoles ? 'SI' : '');
   if(miercoles){
-    fillIfEmpty('hs_salon_azul', 'SI');
-    fillIfEmpty('hs_streaming', 'SI');
-    fillIfEmpty('hs_lugar_entrevista', 'SALÓN AZUL');
+    forceSet('hs_lugar_entrevista', 'SALÓN AZUL');
   }
 }
 cycleSelect.addEventListener('change', renderHojaServicioFields);
