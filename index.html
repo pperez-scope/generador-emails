@@ -413,6 +413,7 @@
       <div class="field" style="flex:0 0 140px;">
         <label>Hora (encabezado)</label>
         <input type="text" id="hs_hora" placeholder="Ej: 18:00">
+        <div class="output-hint" style="margin-top:4px;">Detectada según el ciclo; edítala si hay alguna excepción.</div>
       </div>
       <div class="field">
         <label>Coordinador/a del departamento (música)</label>
@@ -1498,13 +1499,19 @@ const ESC_COLOR = {
 function escIsMiercoles(){ return cycleSelect.value === 'miercoles'; }
 
 /* ---------- Bloque de inicio (varía según ciclo) ---------- */
+const ESC_PRE_DEFAULTS = {
+  miercoles: { carta:'17:30', cartela:'17:45/17:50', puertas:'18:00', duracionEntrevista:'25 min aprox', dingdong:'18:25', locutor:'18:27', aviso:'18:30/18:35' },
+  otros: { puertas:'11:30', cartela:'11:45/11:50', dingdong:'11:55', locutor:'11:58', aviso:'12:01/12:05' }
+};
+
 function renderEscaletaPreBlock(){
   const box = document.getElementById('esc_pre_block');
   const hint = document.getElementById('escPreHint');
   const descansoBtn = document.getElementById('escAddDescansoBtn');
 
   if(escIsMiercoles()){
-    hint.textContent = 'Con entrevista de radio antes del concierto (siempre en este ciclo).';
+    const d = ESC_PRE_DEFAULTS.miercoles;
+    hint.textContent = 'Con entrevista de radio antes del concierto (siempre en este ciclo). Horarios estándar prellenados — edítalos si hay alguna excepción.';
     descansoBtn.style.display = '';
     box.innerHTML = `
       <div class="row">
@@ -1520,8 +1527,16 @@ function renderEscaletaPreBlock(){
         ${fieldHtml('esc_t_locutor','Hora inicio locutor RNE')}
         ${fieldHtml('esc_t_aviso','Hora aviso de móviles (ej: 18:30/18:35)')}
       </div>`;
+    document.getElementById('esc_t_carta').value = d.carta;
+    document.getElementById('esc_t_cartela').value = d.cartela;
+    document.getElementById('esc_t_puertas').value = d.puertas;
+    document.getElementById('esc_duracion_entrevista').value = d.duracionEntrevista;
+    document.getElementById('esc_t_dingdong').value = d.dingdong;
+    document.getElementById('esc_t_locutor').value = d.locutor;
+    document.getElementById('esc_t_aviso').value = d.aviso;
   } else {
-    hint.textContent = 'Sin entrevista de radio ni descanso (sábado / jóvenes intérpretes).';
+    const d = ESC_PRE_DEFAULTS.otros;
+    hint.textContent = 'Sin entrevista de radio ni descanso (sábado / jóvenes intérpretes). Horarios estándar prellenados — edítalos si hay alguna excepción.';
     descansoBtn.style.display = 'none';
     box.innerHTML = `
       <div class="row">
@@ -1533,6 +1548,11 @@ function renderEscaletaPreBlock(){
         ${fieldHtml('esc_t_locutor','Hora inicio locutor/a')}
         ${fieldHtml('esc_t_aviso','Hora aviso de móviles (ej: 12:01/12:05)')}
       </div>`;
+    document.getElementById('esc_t_puertas').value = d.puertas;
+    document.getElementById('esc_t_cartela').value = d.cartela;
+    document.getElementById('esc_t_dingdong').value = d.dingdong;
+    document.getElementById('esc_t_locutor').value = d.locutor;
+    document.getElementById('esc_t_aviso').value = d.aviso;
   }
 }
 renderEscaletaPreBlock();
@@ -1889,6 +1909,7 @@ function renderHojaServicioFields(){
   fillIfEmpty('hs_entrada_publico', miercoles ? HS_DEFAULTS.entradaPublicoMiercoles : HS_DEFAULTS.entradaPublicoOtros);
   if(miercoles) fillIfEmpty('hs_durante_entrevista_azul', HS_DEFAULTS.duranteEntrevistaAzul);
 
+  fillIfEmpty('hs_hora', miercoles ? ESC_PRE_DEFAULTS.miercoles.puertas : ESC_PRE_DEFAULTS.otros.puertas);
   fillIfEmpty('hs_avisos', HS_DEFAULTS.avisos);
   fillIfEmpty('hs_subida_audio', HS_DEFAULTS.subidaAudio);
   fillIfEmpty('hs_luz_sala', HS_DEFAULTS.luzSala);
