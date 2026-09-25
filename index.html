@@ -258,6 +258,17 @@
       <input type="checkbox" id="incluirManos">
       <label for="incluirManos" style="margin:0;">Proyección de manos en pantalla (piano solo / clave solo)</label>
     </div>
+    <div class="field">
+      <label>Rotulación / sobretitulado de las obras</label>
+      <div class="seg" id="rotulacionSeg">
+        <button type="button" data-val="si" class="active">Sí</button>
+        <button type="button" data-val="no">No</button>
+      </div>
+    </div>
+    <div class="field" id="rotulacionDetalleField">
+      <label>Detalle (opcional)</label>
+      <input type="text" id="rotulacionDetalle" placeholder="Ej: rotulación de obras (PPT)">
+    </div>
   </section>
 
   </div>
@@ -281,7 +292,12 @@
         <div class="seg" id="typeSeg">
           <button type="button" data-val="interprete" class="active">Intérprete</button>
           <button type="button" data-val="representante">Representante</button>
+          <button type="button" data-val="ambos">Ambos</button>
         </div>
+      </div>
+      <div class="field" id="repNamesField" style="display:none;">
+        <label>Nombre(s) del/de los representante/s</label>
+        <input type="text" id="repNames" placeholder="Ej: Andreea y Charlotte">
       </div>
       <div class="field">
         <label>Número de destinatarios</label>
@@ -344,8 +360,13 @@
 
   <!-- NOTAS EXTRA -->
   <section class="card">
-    <h2>Notas o frases extra<small>Se añaden al final del email, antes de la despedida</small></h2>
+    <h2>Notas o frases extra<small>Se añaden al final del email, antes de la despedida. Escríbelas en español — si generas el email en inglés se traducen automáticamente</small></h2>
     <textarea id="extraNotes" placeholder="Ej: confirmar si necesitan silla de descanso en escenario, mención específica al piano Steinway, etc."></textarea>
+    <div class="field" style="margin-top:14px;margin-bottom:0;">
+      <label>URL del traductor (Cloudflare Worker) — configúrala una vez</label>
+      <input type="text" id="translatorWorkerUrl" placeholder="https://deepl-proxy.tu-usuario.workers.dev">
+      <div class="output-hint">Solo se usa cuando generas el email en inglés y hay una nota escrita. Se guarda en este navegador.</div>
+    </div>
   </section>
 
   <button class="btn primary" id="generateBtn" style="width:100%; padding:13px; font-size:0.95rem;">Generar email</button>
@@ -446,11 +467,7 @@
   <section class="card">
     <h2>Materiales y proyecciones</h2>
     <div id="hs_entrada_publico_fields"></div>
-    <div class="field">
-      <label>Rotulación y sobretitulado</label>
-      <input type="text" id="hs_rotulacion_variable" placeholder="Ej: SI, rotulación de obras (PPT)">
-      <div class="output-hint">Se añade siempre a continuación: "Rótulos de inicio y fin desde la atem".</div>
-    </div>
+    <div class="output-hint" style="margin-top:-4px;margin-bottom:14px;">Rotulación y sobretitulado se toma de "Datos comunes".</div>
     <div class="field">
       <label>Proyección en sala — rotulación y sobretitulado</label>
       <input type="text" id="hs_proyeccion_sala_rotulacion" placeholder="Ej: SI, en pantalla pequeña con proyector sobretítulos">
@@ -619,7 +636,7 @@ function saveFormaciones(obj){ localStorage.setItem(LS_FORMACIONES, JSON.stringi
 let formaciones = loadFormaciones();
 let lightingCurrentDataUrl = null;
 
-let state = { lang:'es', type:'interprete', single:false, genero:'f' };
+let state = { lang:'es', type:'interprete', single:false, genero:'f', rotulacion:true };
 
 function getFormatoLabel(cycle){
   return {miercoles:'CICLOS DE MIÉRCOLES', sabado:'CONCIERTOS DE SÁBADO', jovenes:'JÓVENES INTÉRPRETES'}[cycle] || '';
@@ -637,6 +654,7 @@ document.querySelectorAll('#typeSeg button').forEach(b=>{
   b.addEventListener('click', ()=>{
     document.querySelectorAll('#typeSeg button').forEach(x=>x.classList.remove('active'));
     b.classList.add('active'); state.type = b.dataset.val;
+    document.getElementById('repNamesField').style.display = (state.type === 'representante' || state.type === 'ambos') ? 'block' : 'none';
   });
 });
 document.querySelectorAll('#numSeg button').forEach(b=>{
@@ -650,6 +668,13 @@ document.querySelectorAll('#generoSeg button').forEach(b=>{
   b.addEventListener('click', ()=>{
     document.querySelectorAll('#generoSeg button').forEach(x=>x.classList.remove('active'));
     b.classList.add('active'); state.genero = b.dataset.val;
+  });
+});
+document.querySelectorAll('#rotulacionSeg button').forEach(b=>{
+  b.addEventListener('click', ()=>{
+    document.querySelectorAll('#rotulacionSeg button').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active'); state.rotulacion = b.dataset.val === 'si';
+    document.getElementById('rotulacionDetalleField').style.display = state.rotulacion ? 'block' : 'none';
   });
 });
 
@@ -1057,6 +1082,42 @@ function buildManosSentence(lang, direct, single, formacionName){
     : `I'd also like to let them know that in ${instrumentoEn} concerts, we project the performer's hands onto a screen for the audience in the auditorium. We've found that this enhances the audience's experience without ever disturbing the performers' concentration.`;
 }
 
+const INSTRUMENT_WORDS = ['piano','violín','violin','viola','violonchelo','chelo','violoncello','cello','contrabajo','arpa','flauta','clarinete','oboe','fagot','trompa','trompeta','trombón','tuba','percusión','guitarra','clave','clavecín','clavicémbalo','órgano','soprano','mezzosoprano','mezzo-soprano','contralto','tenor','barítono','bajo','voz','director','directora'];
+
+function looksLikeInstrument(s){
+  const norm = s.toLowerCase().trim();
+  return INSTRUMENT_WORDS.some(w => norm === w || norm.startsWith(w + ' ') || norm.startsWith(w + ','));
+}
+
+// Extrae solo los nombres de pila de un texto libre de intérpretes
+// (quita apellidos e instrumentos): "Stéphane Degout, barítono. Simon Lepper, piano" -> ["Stéphane","Simon"]
+function extractFirstNames(raw){
+  if(!raw) return [];
+  const blocks = raw.split(/\n|\.\s+/).map(s => s.trim()).filter(Boolean);
+  const names = [];
+  blocks.forEach(block=>{
+    let parts = block.split(',').map(s => s.trim()).filter(Boolean);
+    if(parts.length > 1 && looksLikeInstrument(parts[parts.length - 1])){
+      parts = parts.slice(0, -1);
+    }
+    const joined = parts.join(', ');
+    const people = joined.split(/\s+y\s+|\s+and\s+|,\s*/i).map(s => s.trim()).filter(Boolean);
+    people.forEach(p=>{
+      const firstWord = p.split(/\s+/)[0];
+      if(firstWord && !looksLikeInstrument(firstWord)) names.push(firstWord);
+    });
+  });
+  return names;
+}
+
+function joinNamesList(names, lang){
+  const list = names.filter(Boolean);
+  if(list.length === 0) return '';
+  if(list.length === 1) return list[0];
+  const conj = lang === 'es' ? 'y' : 'and';
+  return `${list.slice(0, -1).join(', ')} ${conj} ${list[list.length - 1]}`;
+}
+
 function buildGreeting(lang, single, genero, names){
   if(lang === 'es'){
     if(single) return genero === 'm' ? `Estimado ${names},` : `Estimada ${names},`;
@@ -1065,15 +1126,26 @@ function buildGreeting(lang, single, genero, names){
   return `Dear ${names},`;
 }
 
-function buildEmail(){
+async function buildEmail(){
   const lang = state.lang;
-  const type = state.type; // interprete | representante
+  const type = state.type; // interprete | representante | ambos
   const cycle = cycleSelect.value;
   const t = T[lang];
-  const direct = type === 'interprete';
+  const direct = type === 'interprete' || type === 'ambos';
   const single = lang === 'es' && direct && state.single; // afecta a la conjugación del cuerpo (tú vs vosotros)
   const genero = state.genero;
-  const names = val('names') || (lang==='es' ? 'todos' : 'All');
+
+  const interpreteFirstNames = joinNamesList(extractFirstNames(val('names')), lang);
+  const repNames = val('repNames');
+  let names;
+  if(type === 'representante'){
+    names = repNames || (lang==='es' ? 'todos' : 'All');
+  } else if(type === 'ambos'){
+    names = [repNames, interpreteFirstNames].filter(Boolean).join(', ') || (lang==='es' ? 'todos' : 'All');
+  } else {
+    names = interpreteFirstNames || (lang==='es' ? 'todos' : 'All');
+  }
+
   const formacionName = formacionSelect.value;
   const timeVal = (id) => lang === 'en' ? to12h(val(id)) : val(id);
 
@@ -1144,7 +1216,14 @@ function buildEmail(){
 
   // --- Notas extra ---
   const extra = val('extraNotes');
-  if(extra) paras.push(extra);
+  if(extra){
+    if(lang === 'en'){
+      const translated = await translateExtraNotes(extra);
+      paras.push(translated || `[Traducir al inglés] ${extra}`);
+    } else {
+      paras.push(extra);
+    }
+  }
 
   // --- Cierre ---
   paras.push(pick('closing'));
@@ -1165,33 +1244,72 @@ function markedTextToHtml(text){
     .join('<br>');
 }
 
-/* ---------- GENERAR ---------- */
-document.getElementById('generateBtn').addEventListener('click', ()=>{
-  const body = buildEmail();
-  let html = markedTextToHtml(body);
+/* ---------- TRADUCCIÓN DE NOTAS EXTRA (vía Cloudflare Worker + DeepL) ---------- */
+const LS_TRANSLATOR_URL = 'et_translator_worker_url';
+const translatorUrlInput = document.getElementById('translatorWorkerUrl');
+translatorUrlInput.value = localStorage.getItem(LS_TRANSLATOR_URL) || '';
+translatorUrlInput.addEventListener('change', ()=>{
+  localStorage.setItem(LS_TRANSLATOR_URL, translatorUrlInput.value.trim());
+});
 
-  const attachRow = document.getElementById('attachRow');
-  attachRow.innerHTML = '';
-  const unclearLayout = document.getElementById('unclearLayout').checked;
-
-  if(!unclearLayout){
-    const planoImg = formaciones[formacionSelect.value];
-    let imagesHtml = '';
-    if(lightingCurrentDataUrl){
-      imagesHtml += `<br><br><img src="${lightingCurrentDataUrl}" style="max-width:420px;width:100%;display:block;">`;
-      attachRow.appendChild(makeAttachCard(lightingCurrentDataUrl, state.lang==='es' ? 'Iluminación' : 'Lighting', 'iluminacion.png'));
+async function translateExtraNotes(text){
+  const workerUrl = localStorage.getItem(LS_TRANSLATOR_URL);
+  if(!workerUrl) return null;
+  try{
+    const resp = await fetch(workerUrl, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ text, source_lang:'ES', target_lang:'EN-GB' })
+    });
+    if(!resp.ok) return null;
+    const data = await resp.json();
+    if(data && data.translations && data.translations[0] && data.translations[0].text){
+      return data.translations[0].text;
     }
-    if(planoImg){
-      imagesHtml += `<br><br><img src="${planoImg}" style="max-width:420px;width:100%;display:block;">`;
-      attachRow.appendChild(makeAttachCard(planoImg, state.lang==='es' ? 'Plano de escenario' : 'Stage plan', 'plano.png'));
-    }
-    html += imagesHtml;
+    return null;
+  } catch(err){
+    console.error('Error al traducir la nota extra:', err);
+    return null;
   }
+}
 
-  document.getElementById('attachRowHint').style.display = attachRow.children.length ? 'block' : 'none';
-  document.getElementById('emailBody').innerHTML = html;
-  document.getElementById('output-card').classList.add('show');
-  document.getElementById('output-card').scrollIntoView({behavior:'smooth', block:'start'});
+/* ---------- GENERAR ---------- */
+document.getElementById('generateBtn').addEventListener('click', async ()=>{
+  const btn = document.getElementById('generateBtn');
+  btn.disabled = true;
+  const originalLabel = btn.textContent;
+  btn.textContent = 'Generando…';
+
+  try{
+    const body = await buildEmail();
+    let html = markedTextToHtml(body);
+
+    const attachRow = document.getElementById('attachRow');
+    attachRow.innerHTML = '';
+    const unclearLayout = document.getElementById('unclearLayout').checked;
+
+    if(!unclearLayout){
+      const planoImg = formaciones[formacionSelect.value];
+      let imagesHtml = '';
+      if(lightingCurrentDataUrl){
+        imagesHtml += `<br><br><img src="${lightingCurrentDataUrl}" style="max-width:420px;width:100%;display:block;">`;
+        attachRow.appendChild(makeAttachCard(lightingCurrentDataUrl, state.lang==='es' ? 'Iluminación' : 'Lighting', 'iluminacion.png'));
+      }
+      if(planoImg){
+        imagesHtml += `<br><br><img src="${planoImg}" style="max-width:420px;width:100%;display:block;">`;
+        attachRow.appendChild(makeAttachCard(planoImg, state.lang==='es' ? 'Plano de escenario' : 'Stage plan', 'plano.png'));
+      }
+      html += imagesHtml;
+    }
+
+    document.getElementById('attachRowHint').style.display = attachRow.children.length ? 'block' : 'none';
+    document.getElementById('emailBody').innerHTML = html;
+    document.getElementById('output-card').classList.add('show');
+    document.getElementById('output-card').scrollIntoView({behavior:'smooth', block:'start'});
+  } finally {
+    btn.disabled = false;
+    btn.textContent = originalLabel;
+  }
 });
 
 function makeAttachCard(dataUrl, label, filename){
@@ -1273,12 +1391,15 @@ function getFormSnapshot(){
     coordNombre: val('coord_nombre'),
     coordGenero: val('coord_genero'),
     incluirManos: document.getElementById('incluirManos').checked,
+    rotulacion: state.rotulacion,
+    rotulacionDetalle: val('rotulacionDetalle'),
 
     // --- email ---
     lang: state.lang,
     type: state.type,
     single: state.single,
     genero: state.genero,
+    repNames: val('repNames'),
     unclearLayout: document.getElementById('unclearLayout').checked,
     m_prueba_ini: val('m_prueba_ini'),
     s_prueba: val('s_prueba'),
@@ -1328,6 +1449,8 @@ function applyFormSnapshot(s){
     b.classList.toggle('active', b.dataset.val === (s.type || 'interprete'));
   });
   state.type = s.type || 'interprete';
+  document.getElementById('repNamesField').style.display = (state.type === 'representante' || state.type === 'ambos') ? 'block' : 'none';
+  document.getElementById('repNames').value = s.repNames || '';
 
   // número de destinatarios y género
   document.querySelectorAll('#numSeg button').forEach(b=>{
@@ -1339,6 +1462,15 @@ function applyFormSnapshot(s){
     b.classList.toggle('active', b.dataset.val === (s.genero || 'f'));
   });
   state.genero = s.genero || 'f';
+
+  // rotulación / sobretitulado
+  const rotulacionVal = s.rotulacion === undefined ? true : !!s.rotulacion;
+  document.querySelectorAll('#rotulacionSeg button').forEach(b=>{
+    b.classList.toggle('active', b.dataset.val === (rotulacionVal ? 'si' : 'no'));
+  });
+  state.rotulacion = rotulacionVal;
+  document.getElementById('rotulacionDetalleField').style.display = rotulacionVal ? 'block' : 'none';
+  document.getElementById('rotulacionDetalle').value = s.rotulacionDetalle || '';
 
   // --- compartidos ---
   document.getElementById('esc_fecha').value = s.esc_fecha || '';
@@ -1713,7 +1845,8 @@ function escRichValue(raw){
 }
 
 function escAddObraBlock(ws, texto, formacion, locucionLabel){
-  escAddRow(ws, [ '', '', escRichValue(texto), formacion || '', 'Proyección rótulos', '', '', ''], ESC_COLOR.pink);
+  const videoCue = state.rotulacion ? 'Proyección rótulos' : '';
+  escAddRow(ws, [ '', '', escRichValue(texto), formacion || '', videoCue, '', '', ''], ESC_COLOR.pink);
   escAddRow(ws, ['', '', 'Aplausos', '', '', '', 'Glorias', ''], ESC_COLOR.none);
   escAddRow(ws, ['', '', locucionLabel, '', '', '', '', 'Streaming + salón azul'], ESC_COLOR.blue);
 }
@@ -2054,7 +2187,10 @@ document.getElementById('generateHojaServicioBtn').addEventListener('click', asy
     } else {
       rows.push(hsFieldRow('ENTRADA DE PÚBLICO', hv('hs_entrada_publico')));
     }
-    rows.push(hsFieldRow('ROTULACIÓN Y SOBRETITULADO', `${hv('hs_rotulacion_variable')}\nRótulos de inicio y fin desde la atem`));
+    const rotulacionTexto = state.rotulacion
+      ? `SI${val('rotulacionDetalle') ? ', ' + val('rotulacionDetalle') : ''}`
+      : 'NO';
+    rows.push(hsFieldRow('ROTULACIÓN Y SOBRETITULADO', `${rotulacionTexto}\nRótulos de inicio y fin desde la atem`));
     rows.push(hsFieldRow('PROYECCIÓN EN SALA ROTULACIÓN Y SOBRETITULADO', hv('hs_proyeccion_sala_rotulacion')));
     rows.push(hsFieldRow('OTRAS PROYECCIONES DURANTE EL ACTO', hv('hs_otras_proyecciones')));
     rows.push(hsFieldRow('PROYECCIÓN DE MANOS', proyeccionManos));
@@ -2118,7 +2254,7 @@ const HS_FIELD_IDS = [
   'hs_hora','hs_coordinador_dpto','hs_programa_link',
   'hs_entrevista','hs_lugar_entrevista','hs_microfonia_entrevista',
   'hs_entrada_publico','hs_durante_entrevista_azul',
-  'hs_rotulacion_variable','hs_proyeccion_sala_rotulacion','hs_otras_proyecciones','hs_avisos',
+  'hs_proyeccion_sala_rotulacion','hs_otras_proyecciones','hs_avisos',
   'hs_camara_extra','hs_montaje_video','hs_backup',
   'hs_locutor','hs_rider_microfonia','hs_intervenciones_habladas','hs_montaje_sonido','hs_subida_audio',
   'hs_iluminacion_concierto','hs_partituras','hs_luz_sala',
