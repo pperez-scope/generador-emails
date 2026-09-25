@@ -261,13 +261,14 @@
     <div class="field">
       <label>Rotulación / sobretitulado de las obras</label>
       <div class="seg" id="rotulacionSeg">
-        <button type="button" data-val="si" class="active">Sí</button>
-        <button type="button" data-val="no">No</button>
+        <button type="button" data-val="rotulos" class="active">Rótulos</button>
+        <button type="button" data-val="sobretitulos">Sobretítulos</button>
+        <button type="button" data-val="ninguno">Ninguno</button>
       </div>
     </div>
     <div class="field" id="rotulacionDetalleField">
       <label>Detalle (opcional)</label>
-      <input type="text" id="rotulacionDetalle" placeholder="Ej: rotulación de obras (PPT)">
+      <input type="text" id="rotulacionDetalle" placeholder="Ej: PPT">
     </div>
   </section>
 
@@ -636,7 +637,7 @@ function saveFormaciones(obj){ localStorage.setItem(LS_FORMACIONES, JSON.stringi
 let formaciones = loadFormaciones();
 let lightingCurrentDataUrl = null;
 
-let state = { lang:'es', type:'interprete', single:false, genero:'f', rotulacion:true };
+let state = { lang:'es', type:'interprete', single:false, genero:'f', rotulacion:'rotulos' };
 
 function getFormatoLabel(cycle){
   return {miercoles:'CICLOS DE MIÉRCOLES', sabado:'CONCIERTOS DE SÁBADO', jovenes:'JÓVENES INTÉRPRETES'}[cycle] || '';
@@ -673,8 +674,8 @@ document.querySelectorAll('#generoSeg button').forEach(b=>{
 document.querySelectorAll('#rotulacionSeg button').forEach(b=>{
   b.addEventListener('click', ()=>{
     document.querySelectorAll('#rotulacionSeg button').forEach(x=>x.classList.remove('active'));
-    b.classList.add('active'); state.rotulacion = b.dataset.val === 'si';
-    document.getElementById('rotulacionDetalleField').style.display = state.rotulacion ? 'block' : 'none';
+    b.classList.add('active'); state.rotulacion = b.dataset.val;
+    document.getElementById('rotulacionDetalleField').style.display = state.rotulacion === 'ninguno' ? 'none' : 'block';
   });
 });
 
@@ -1464,12 +1465,15 @@ function applyFormSnapshot(s){
   state.genero = s.genero || 'f';
 
   // rotulación / sobretitulado
-  const rotulacionVal = s.rotulacion === undefined ? true : !!s.rotulacion;
+  let rotulacionVal = s.rotulacion;
+  if(rotulacionVal === undefined) rotulacionVal = 'rotulos';
+  if(rotulacionVal === true) rotulacionVal = 'rotulos'; // borradores antiguos (sí/no)
+  if(rotulacionVal === false) rotulacionVal = 'ninguno';
   document.querySelectorAll('#rotulacionSeg button').forEach(b=>{
-    b.classList.toggle('active', b.dataset.val === (rotulacionVal ? 'si' : 'no'));
+    b.classList.toggle('active', b.dataset.val === rotulacionVal);
   });
   state.rotulacion = rotulacionVal;
-  document.getElementById('rotulacionDetalleField').style.display = rotulacionVal ? 'block' : 'none';
+  document.getElementById('rotulacionDetalleField').style.display = rotulacionVal === 'ninguno' ? 'none' : 'block';
   document.getElementById('rotulacionDetalle').value = s.rotulacionDetalle || '';
 
   // --- compartidos ---
@@ -1845,7 +1849,9 @@ function escRichValue(raw){
 }
 
 function escAddObraBlock(ws, texto, formacion, locucionLabel){
-  const videoCue = state.rotulacion ? 'Proyección rótulos' : '';
+  const videoCue = state.rotulacion === 'rotulos' ? 'Proyección rótulos'
+    : state.rotulacion === 'sobretitulos' ? 'Proyección sobretítulos'
+    : '';
   escAddRow(ws, [ '', '', escRichValue(texto), formacion || '', videoCue, '', '', ''], ESC_COLOR.pink);
   escAddRow(ws, ['', '', 'Aplausos', '', '', '', 'Glorias', ''], ESC_COLOR.none);
   escAddRow(ws, ['', '', locucionLabel, '', '', '', '', 'Streaming + salón azul'], ESC_COLOR.blue);
@@ -2187,9 +2193,10 @@ document.getElementById('generateHojaServicioBtn').addEventListener('click', asy
     } else {
       rows.push(hsFieldRow('ENTRADA DE PÚBLICO', hv('hs_entrada_publico')));
     }
-    const rotulacionTexto = state.rotulacion
-      ? `SI${val('rotulacionDetalle') ? ', ' + val('rotulacionDetalle') : ''}`
-      : 'NO';
+    const ROTULACION_LABELS = { rotulos: 'rotulación de obras', sobretitulos: 'sobretitulado' };
+    const rotulacionTexto = state.rotulacion === 'ninguno'
+      ? 'NO'
+      : `SI, ${ROTULACION_LABELS[state.rotulacion]}${val('rotulacionDetalle') ? ' (' + val('rotulacionDetalle') + ')' : ''}`;
     rows.push(hsFieldRow('ROTULACIÓN Y SOBRETITULADO', `${rotulacionTexto}\nRótulos de inicio y fin desde la atem`));
     rows.push(hsFieldRow('PROYECCIÓN EN SALA ROTULACIÓN Y SOBRETITULADO', hv('hs_proyeccion_sala_rotulacion')));
     rows.push(hsFieldRow('OTRAS PROYECCIONES DURANTE EL ACTO', hv('hs_otras_proyecciones')));
