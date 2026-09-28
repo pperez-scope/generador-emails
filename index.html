@@ -330,6 +330,11 @@
       <label>Detalle (opcional)</label>
       <input type="text" id="rotulacionDetalle" placeholder="Ej: PPT">
     </div>
+    <div class="field" id="rotulacionLinkField">
+      <label>Enlace de rotulación / sobretitulado (Dropbox)</label>
+      <input type="text" id="rotulacionLink" placeholder="https://www.dropbox.com/...">
+      <div class="output-hint">Temporada 2026-2027 prerrellenado; para otra temporada, pega el nuevo enlace.</div>
+    </div>
   </section>
 
   <section class="card" data-tipos="conferencias especiales biblioteca palma">
@@ -513,7 +518,7 @@
   <!-- ====================== TAB: HOJA DE SERVICIO ====================== -->
   <div class="tab-panel" id="tab-hoja">
 
-  <div class="sub" style="margin:-10px 0 22px;">Documento interno (.xlsx) para el equipo técnico de la Fundación</div>
+  <div class="sub" style="margin:-10px 0 22px;">Documento interno (.docx) para el equipo técnico de la Fundación</div>
 
   <section class="card">
     <h2>Información del acto</h2>
@@ -689,7 +694,7 @@
     </div>
   </section>
 
-  <button type="button" class="btn primary" id="generateHojaServicioBtn" style="width:100%; padding:13px; font-size:0.95rem;">Generar hoja de servicio (.xlsx)</button>
+  <button type="button" class="btn primary" id="generateHojaServicioBtn" style="width:100%; padding:13px; font-size:0.95rem;">Generar hoja de servicio (.docx)</button>
 
   </div>
   <!-- ====================== /TAB: HOJA DE SERVICIO ====================== -->
@@ -731,6 +736,7 @@
 <div class="toast" id="toast">Copiado</div>
 
 <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js"></script>
 
 <script>
 /* ---------- ESTADO Y PERSISTENCIA ---------- */
@@ -1629,6 +1635,7 @@ function getFormSnapshot(){
     incluirManos: document.getElementById('incluirManos').checked,
     rotulacion: state.rotulacion,
     rotulacionDetalle: val('rotulacionDetalle'),
+    rotulacionLink: val('rotulacionLink'),
 
     // --- email ---
     lang: state.lang,
@@ -1713,6 +1720,7 @@ function applyFormSnapshot(s){
   state.rotulacion = rotulacionVal;
   document.getElementById('rotulacionDetalleField').style.display = rotulacionVal === 'ninguno' ? 'none' : 'block';
   document.getElementById('rotulacionDetalle').value = s.rotulacionDetalle || '';
+  document.getElementById('rotulacionLink').value = (s.rotulacionLink !== undefined) ? s.rotulacionLink : defaultRotulacionLink();
 
   // --- compartidos ---
   document.getElementById('esc_fecha').value = s.esc_fecha || '';
@@ -2361,6 +2369,11 @@ Si hay cafetería lo prepara mantenimiento en el momento pero debe estar chequea
   montajeSonidoMiercoles: 'montaje sonido a cargo de técnicos RNE, apoyo con nuestra microfonía para nuestra grabación si lo consideramos necesario'
 };
 
+const ROTULACION_LINKS = {
+  '2026-2027': 'https://www.dropbox.com/scl/fo/d39ksy68pzzd7s56bda5g/ANRKE8QGbHv5txtEkU2ZOY8?rlkey=c3xjna1074mcqccy3d9hdo9xq&st=8k47l2un&dl=0'
+};
+function defaultRotulacionLink(){ return ROTULACION_LINKS[computeTemporadaDefault()] || ''; }
+
 function fillIfEmpty(id, value){
   const el = document.getElementById(id);
   if(el && !el.value) el.value = value;
@@ -2504,6 +2517,7 @@ function applyTipoDefaults(){
   forceSet('hs_locutor', '');
   forceSet('hs_montaje_sonido', '');
 
+  fillIfEmpty('rotulacionLink', defaultRotulacionLink());
   fillIfEmpty('hs_luz_sala', HS_DEFAULTS.luzSala);
   fillIfEmpty('hs_cafeteria', HS_DEFAULTS.cafeteria);
   fillIfEmpty('hs_ruta_preservacion', HS_DEFAULTS.rutaPreservacion);
@@ -2574,15 +2588,15 @@ function fileHourPart(hora){
   return (m[2] && m[2] !== '00') ? ` ${m[1]}_${m[2]}H` : ` ${m[1]}H`;
 }
 
-// [1 SEP (M) 18H] Hoja de Servicio CONCIERTOS.xlsx   ·   [15 OCT (J) 18_30H] Hoja de Servicio CONFERENCIAS.xlsx
-function buildDocFilename(kind, isoDate, hora, tipoFile){
+// [1 SEP (M) 18H] Hoja de Servicio CONCIERTOS.docx   ·   [15 OCT (J) 18_30H] Hoja de Servicio CONFERENCIAS.docx
+function buildDocFilename(kind, isoDate, hora, tipoFile, ext){
   let datePart = 'sin fecha';
   if(isoDate){
     const [y, m, d] = isoDate.split('-').map(Number);
     const dateObj = new Date(y, m - 1, d);
     datePart = `${d} ${HS_MESES_CORTOS[m - 1]} (${HS_DIAS_LETRA[dateObj.getDay()]})`;
   }
-  return `[${datePart}${fileHourPart(hora)}] ${kind} ${tipoFile}.xlsx`;
+  return `[${datePart}${fileHourPart(hora)}] ${kind} ${tipoFile}.${ext || 'xlsx'}`;
 }
 
 function docTipoFile(paraEscaleta){
@@ -2595,7 +2609,7 @@ function docTipoFile(paraEscaleta){
 
 /* ---------- Generar y descargar ---------- */
 document.getElementById('generateHojaServicioBtn').addEventListener('click', async ()=>{
-  if(typeof ExcelJS === 'undefined'){
+  if(typeof window.docx === 'undefined'){
     alert('No se ha podido cargar la librería para generar el Excel. Comprueba tu conexión a internet y vuelve a intentarlo.');
     return;
   }
@@ -2607,55 +2621,64 @@ document.getElementById('generateHojaServicioBtn').addEventListener('click', asy
   try{
     function hv(id){ const el = document.getElementById(id); return el ? el.value.trim() : ''; }
 
-    const wb = new ExcelJS.Workbook();
-    const ws = wb.addWorksheet('Hoja de Servicio', { views: [{ state:'frozen', ySplit:1 }] });
-    ws.columns = [ {width: 30}, {width: 95} ];
-    ws.pageSetup = { orientation: 'landscape', fitToPage: true, fitToWidth: 1, fitToHeight: 0 };
+    const D = window.docx;
+    const FONT = 'Calibri', SZ = 20; // Calibri 10 pt (tamaño en medios puntos)
+    const BORDER = { style: D.BorderStyle.SINGLE, size: 4, color: 'BFBFBF' };
+    const CELL_BORDERS = { top:BORDER, bottom:BORDER, left:BORDER, right:BORDER };
+    const COLW = [2800, 7406]; // A4 vertical con márgenes de 1,5 cm
+    const rows = [];
 
-    const HS_BORDER = { style:'thin', color:{argb:'FFD9D9D9'} };
-    const HS_HEADER_FILL = 'FFD9D9D9';
+    const mkRun = (text, o) => new D.TextRun({ text, font:FONT, size:SZ, bold: !!(o && o.bold), italics: !!(o && o.italic) });
+    // Convierte texto con **negrita** / *cursiva* y saltos de línea en párrafos
+    function paragraphsFromRaw(raw, forceBold){
+      const paras = []; let cur = [];
+      escParseRichText(raw || '').forEach(r=>{
+        if(r.text === '\n'){ paras.push(cur); cur = []; }
+        else if(r.text !== '') cur.push(mkRun(r.text, { bold: r.bold || forceBold, italic: r.italic }));
+      });
+      paras.push(cur);
+      return paras.map(rs => new D.Paragraph({ children: rs, spacing:{ before:0, after:0 } }));
+    }
+    function linkParagraph(url, text){
+      return new D.Paragraph({ spacing:{ before:0, after:0 }, children:[
+        new D.ExternalHyperlink({ link: url, children:[
+          new D.TextRun({ text: text || url, font:FONT, size:SZ, color:'0563C1', underline:{ type: D.UnderlineType.SINGLE } })
+        ] })
+      ] });
+    }
+    function mkCell(children, o){
+      return new D.TableCell({
+        children,
+        width: { size: o.width, type: D.WidthType.DXA },
+        columnSpan: o.span,
+        borders: CELL_BORDERS,
+        shading: o.fill ? { type: D.ShadingType.CLEAR, color:'auto', fill:o.fill } : undefined,
+        margins: { top:40, bottom:40, left:80, right:80 },
+        verticalAlign: D.VerticalAlign.TOP
+      });
+    }
 
     function hsHeaderRow(text){
-      const row = ws.addRow([text, '']);
-      ws.mergeCells(`A${row.number}:B${row.number}`);
-      [1,2].forEach(c=>{
-        const cell = row.getCell(c);
-        cell.font = { name:'Arial', size:10, bold:true };
-        cell.alignment = { vertical:'middle', wrapText:true };
-        cell.fill = { type:'pattern', pattern:'solid', fgColor:{argb: HS_HEADER_FILL} };
-        cell.border = { top:HS_BORDER, bottom:HS_BORDER, left:HS_BORDER, right:HS_BORDER };
-      });
-      return row;
+      rows.push(new D.TableRow({ children:[ mkCell(paragraphsFromRaw(text, true), { width: COLW[0] + COLW[1], span:2, fill:'D9D9D9' }) ] }));
     }
     function hsFieldRow(label, raw, opts){
       opts = opts || {};
-      const row = ws.addRow([label, escRichValue(raw || '')]);
-      row.getCell(1).font = { name:'Arial', size:10, bold:true };
-      row.getCell(1).alignment = { vertical:'top', wrapText:true };
-      row.getCell(2).font = { name:'Arial', size:10 };
-      row.getCell(2).alignment = { vertical:'top', wrapText:true };
-      row.getCell(1).border = { top:HS_BORDER, bottom:HS_BORDER, left:HS_BORDER, right:HS_BORDER };
-      row.getCell(2).border = { top:HS_BORDER, bottom:HS_BORDER, left:HS_BORDER, right:HS_BORDER };
-      if(opts.dropdown){
-        row.getCell(2).dataValidation = { type:'list', allowBlank:true, formulae:['"SI,NO"'] };
-      }
-      return row;
+      const valueParas = paragraphsFromRaw(raw || '', false);
+      if(opts.linkUrl) valueParas.push(linkParagraph(opts.linkUrl));
+      rows.push(new D.TableRow({ children:[
+        mkCell(paragraphsFromRaw(label, true), { width: COLW[0] }),
+        mkCell(valueParas, { width: COLW[1] })
+      ] }));
     }
     function hsLinkRow(label, url, mainText, secondLine){
-      let value;
-      if(url){
-        value = { text: secondLine ? `${mainText}\n${secondLine}` : mainText, hyperlink: url };
-      } else {
-        value = [mainText, secondLine].filter(Boolean).join('\n');
-      }
-      const row = ws.addRow([label, value]);
-      row.getCell(1).font = { name:'Arial', size:10, bold:true };
-      row.getCell(1).alignment = { vertical:'top', wrapText:true };
-      row.getCell(2).alignment = { vertical:'top', wrapText:true };
-      if(!url) row.getCell(2).font = { name:'Arial', size:10 };
-      row.getCell(1).border = { top:HS_BORDER, bottom:HS_BORDER, left:HS_BORDER, right:HS_BORDER };
-      row.getCell(2).border = { top:HS_BORDER, bottom:HS_BORDER, left:HS_BORDER, right:HS_BORDER };
-      return row;
+      const valueParas = [];
+      if(url) valueParas.push(linkParagraph(url, mainText));
+      else valueParas.push(...paragraphsFromRaw(mainText || '', false));
+      if(secondLine) valueParas.push(...paragraphsFromRaw(secondLine, false));
+      rows.push(new D.TableRow({ children:[
+        mkCell(paragraphsFromRaw(label, true), { width: COLW[0] }),
+        mkCell(valueParas, { width: COLW[1] })
+      ] }));
     }
 
     const tipo = state.tipo;
@@ -2758,7 +2781,7 @@ document.getElementById('generateHojaServicioBtn').addEventListener('click', asy
         hsFieldRow('ENTRADA DE PÚBLICO', hv('hs_entrada_publico'));
       }
       if(showConcierto){
-        hsFieldRow('ROTULACIÓN Y SOBRETITULADO', `${rotulacionTexto}\nRótulos de inicio y fin desde la atem`);
+        hsFieldRow('ROTULACIÓN Y SOBRETITULADO', `${rotulacionTexto}\nRótulos de inicio y fin desde la atem`, { linkUrl: state.rotulacion !== 'ninguno' ? hv('rotulacionLink') : '' });
         hsFieldRow('PROYECCIÓN EN SALA ROTULACIÓN Y SOBRETITULADO', hv('hs_proyeccion_sala_rotulacion'));
       }
       if(isConf || isEsp) hsFieldRow('PRESENTACIÓN', hv('hs_conf_presentacion'));
@@ -2822,12 +2845,18 @@ document.getElementById('generateHojaServicioBtn').addEventListener('click', asy
       hsFieldRow('VÍDEOS REFERENCIA', hv('hs_videos_referencia'));
     }
 
-    const buffer = await wb.xlsx.writeBuffer();
-    const blob = new Blob([buffer], {type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+    const doc = new D.Document({
+      styles: { default: { document: { run: { font:FONT, size:SZ }, paragraph: { spacing:{ before:0, after:0 } } } } },
+      sections: [{
+        properties: { page: { size: { width:11906, height:16838 }, margin: { top:850, bottom:850, left:850, right:850 } } },
+        children: [ new D.Table({ width:{ size: COLW[0] + COLW[1], type: D.WidthType.DXA }, columnWidths: COLW, layout: D.TableLayoutType.FIXED, rows }) ]
+      }]
+    });
+    const blob = await D.Packer.toBlob(doc);
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = buildDocFilename('Hoja de Servicio', isoDate, hora, docTipoFile(false));
+    a.download = buildDocFilename('Hoja de Servicio', isoDate, hora, docTipoFile(false), 'docx');
     document.body.appendChild(a);
     a.click();
     a.remove();
