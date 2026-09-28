@@ -191,7 +191,7 @@
   <div class="row" style="margin:-10px 0 22px;">
     <button type="button" class="btn small" id="saveDraftBtn">💾 Guardar borrador</button>
     <button type="button" class="btn small ghost" id="openHistorialBtn">🕘 Historial</button>
-    <button type="button" class="btn small ghost" id="newConcertBtn">🆕 Nuevo concierto</button>
+    <button type="button" class="btn small ghost" id="newConcertBtn">🆕 Nuevo acto</button>
   </div>
 
   <div class="tabbar">
@@ -205,42 +205,85 @@
   <div class="tab-panel active" id="tab-comunes">
 
   <section class="card">
-    <h2>Datos del concierto<small>Se usan en el email, la escaleta y la hoja de servicio</small></h2>
-    <div class="row">
-      <div class="field">
-        <label>Ciclo</label>
-        <select id="cycle">
-          <option value="miercoles">Ciclos de miércoles</option>
-          <option value="sabado">Conciertos de sábado</option>
-          <option value="jovenes">Jóvenes intérpretes</option>
-        </select>
+    <h2>Datos del acto<small>Se usan en el email, la escaleta y la hoja de servicio</small></h2>
+    <div class="field">
+      <label>Tipo de acto</label>
+      <div class="seg" id="tipoSeg">
+        <button type="button" data-val="conciertos" class="active">Conciertos</button>
+        <button type="button" data-val="conferencias">Conferencias</button>
+        <button type="button" data-val="especiales">Actos especiales</button>
+        <button type="button" data-val="biblioteca">Biblioteca</button>
+        <button type="button" data-val="palma">Palma</button>
       </div>
+    </div>
+    <div class="row">
       <div class="field" style="flex:0 0 180px;">
         <label>Fecha</label>
         <input type="date" id="esc_fecha">
       </div>
+      <div class="field" style="flex:0 0 130px;">
+        <label>Hora</label>
+        <input type="text" id="hs_hora" placeholder="Ej: 18:00">
+      </div>
+      <div class="field">
+        <label>Departamento</label>
+        <input type="text" id="departamento">
+      </div>
+      <div class="field">
+        <label>Coordinador/a del departamento</label>
+        <input type="text" id="hs_coordinador_dpto" placeholder="Nombre">
+      </div>
+    </div>
+    <div class="row">
+      <div class="field" id="formatoSelField">
+        <label>Formato</label>
+        <select id="cycle">
+          <option value="miercoles">Ciclos de miércoles</option>
+          <option value="sabado">Conciertos de sábado</option>
+          <option value="jovenes">Jóvenes intérpretes</option>
+          <option value="didacticos">Conciertos didácticos</option>
+          <option value="viernes">Viernes temáticos</option>
+          <option value="reestrenos">Aula de (re)estrenos</option>
+        </select>
+      </div>
+      <div class="field" id="formatoLibreField" style="display:none;">
+        <label>Formato</label>
+        <input type="text" id="formatoLibre" placeholder="Escríbelo a mano">
+      </div>
+      <div class="field">
+        <label>Lugar</label>
+        <select id="lugarSel">
+          <option value="Auditorio">Auditorio</option>
+          <option value="Salón azul">Salón azul</option>
+          <option value="Hall">Hall</option>
+          <option value="Patio">Patio</option>
+          <option value="Sala normal">Sala normal</option>
+          <option value="Sala ampliada">Sala ampliada</option>
+          <option value="otro">Otro…</option>
+        </select>
+      </div>
+      <div class="field" id="lugarOtroField" style="display:none;">
+        <label>Nombre del lugar</label>
+        <input type="text" id="lugarOtro" placeholder="Ej: Biblioteca">
+      </div>
     </div>
     <div class="row">
       <div class="field">
-        <label>Ciclo (nombre de la temporada)</label>
+        <label>Ciclo</label>
         <input type="text" id="hs_ciclo" placeholder="Ej: Ravel entre españoles: Falla y Viñes">
       </div>
       <div class="field">
-        <label>Acto (título del programa)</label>
+        <label>Acto</label>
         <input type="text" id="hs_acto" placeholder="Ej: El Quijote, castillos imaginarios">
       </div>
     </div>
     <div class="field">
-      <label>Intérpretes</label>
-      <textarea id="names" rows="2" placeholder="Ej: Aurelio, Luciana y Flor"></textarea>
-    </div>
-    <div class="field">
-      <label>Formación instrumental</label>
-      <div class="row">
-        <select id="formacion" style="flex:1"></select>
-        <button type="button" class="btn small" id="manageBtn" style="flex:0 0 auto">Gestionar planos</button>
+      <label>Pruebas técnicas</label>
+      <textarea id="pruebasTecnicas" rows="3" placeholder="Ej: 17:30 Prueba técnica con ponente"></textarea>
+      <div class="row" style="margin-top:6px;" data-tipos="conciertos especiales">
+        <button type="button" class="btn small ghost" id="copyPruebasBtn">↧ Copiar del horario detallado del email</button>
       </div>
-      <div class="plano-preview" id="planoPreview"></div>
+      <div class="output-hint">En conciertos, si lo dejas vacío se usa el horario detallado del email.</div>
     </div>
     <div class="row">
       <div class="field">
@@ -254,6 +297,22 @@
           <option value="o">Coordinador</option>
         </select>
       </div>
+    </div>
+  </section>
+
+  <section class="card" data-tipos="conciertos especiales">
+    <h2>Concierto<small>Intérpretes, formación y proyecciones</small></h2>
+    <div class="field">
+      <label>Intérpretes</label>
+      <textarea id="names" rows="2" placeholder="Ej: Aurelio, Luciana y Flor"></textarea>
+    </div>
+    <div class="field">
+      <label>Formación instrumental</label>
+      <div class="row">
+        <select id="formacion" style="flex:1"></select>
+        <button type="button" class="btn small" id="manageBtn" style="flex:0 0 auto">Gestionar planos</button>
+      </div>
+      <div class="plano-preview" id="planoPreview"></div>
     </div>
     <div class="checkline">
       <input type="checkbox" id="incluirManos">
@@ -270,6 +329,31 @@
     <div class="field" id="rotulacionDetalleField">
       <label>Detalle (opcional)</label>
       <input type="text" id="rotulacionDetalle" placeholder="Ej: PPT">
+    </div>
+  </section>
+
+  <section class="card" data-tipos="conferencias especiales biblioteca palma">
+    <h2>Ponentes y participantes</h2>
+    <div class="field">
+      <label>Ponente / Participantes</label>
+      <textarea id="ponentes" rows="2" placeholder="Ej: Ignacio Pajón Leyra"></textarea>
+    </div>
+    <div data-tipos="conferencias especiales">
+      <div class="field">
+        <label>Presentación del acto</label>
+        <div class="seg" id="presentacionSeg">
+          <button type="button" data-val="no" class="active">No</button>
+          <button type="button" data-val="si">Sí</button>
+        </div>
+      </div>
+      <div class="field" id="presentacionCargoField" style="display:none;">
+        <label>A cargo de</label>
+        <input type="text" id="presentacionCargo" placeholder="Nombre">
+      </div>
+    </div>
+    <div class="field" data-tipos="conferencias especiales biblioteca">
+      <label>Disposición del escenario</label>
+      <input type="text" id="disposicionEscenario" placeholder="Ej: mesa con dos sillones y atril">
     </div>
   </section>
 
@@ -398,10 +482,11 @@
   </section>
 
   <section class="card">
-    <h2>Obras<small>Añade una por una; usa Tab al principio de una línea para marcarla como movimiento (Mayús+Tab para quitarlo)</small></h2>
+    <h2>Programa<small>Añade obras y/o bloques uno por uno; usa Tab al principio de una línea para marcarla como movimiento (Mayús+Tab para quitarlo)</small></h2>
     <div id="escaletaObras"></div>
     <div class="row" style="margin-top:8px;">
-      <button type="button" class="btn small" id="escAddObraBtn">+ Añadir obra</button>
+      <button type="button" class="btn small" id="escAddObraBtn" data-tipos="conciertos especiales">+ Añadir obra</button>
+      <button type="button" class="btn small" id="escAddBloqueBtn" data-tipos="conferencias especiales biblioteca palma">+ Añadir bloque</button>
       <button type="button" class="btn small ghost" id="escAddDescansoBtn" style="display:none;">+ Añadir descanso</button>
     </div>
   </section>
@@ -409,7 +494,7 @@
   <section class="card">
     <h2>Cierre</h2>
     <div class="row">
-      <div class="field">
+      <div class="field" data-tipos="conciertos especiales">
         <label>Bis (opcional — se deja como "Bis" si no lo sabes aún)</label>
         <input type="text" id="esc_bis" placeholder="Ej: Danza del fuego, dos pianos (Falla)">
       </div>
@@ -431,23 +516,12 @@
   <div class="sub" style="margin:-10px 0 22px;">Documento interno (.xlsx) para el equipo técnico de la Fundación</div>
 
   <section class="card">
-    <h2>Datos generales</h2>
-    <div class="row">
-      <div class="field" style="flex:0 0 140px;">
-        <label>Hora (encabezado)</label>
-        <input type="text" id="hs_hora" placeholder="Ej: 18:00">
-        <div class="output-hint" style="margin-top:4px;">Detectada según el ciclo; edítala si hay alguna excepción.</div>
-      </div>
-      <div class="field">
-        <label>Coordinador/a del departamento (música)</label>
-        <input type="text" id="hs_coordinador_dpto" placeholder="Nombre">
-      </div>
-    </div>
+    <h2>Información del acto</h2>
     <div class="field">
-      <label>Programa / escaleta (enlace, una vez subida a Drive)</label>
-      <input type="text" id="hs_programa_link" placeholder="https://docs.google.com/spreadsheets/...">
+      <label>Programa / escaleta</label>
+      <textarea id="hs_programa_link" rows="3" placeholder="Enlace a la escaleta (una vez subida a Drive) o programa resumido con horas"></textarea>
     </div>
-    <div class="output-hint" style="margin-top:-4px;">Fecha, ciclo, acto, formato, intérprete/s, disposición de escenario, ensayo técnico, descanso, coordinación de escenario y proyección de manos se toman automáticamente de "Datos comunes".</div>
+    <div class="output-hint" style="margin-top:-4px;">Fecha, hora, departamento, coordinador, formato, ciclo, acto, lugar, pruebas técnicas, intérpretes / ponentes, disposición de escenario y coordinación de escenario se toman de "Datos comunes".</div>
     <div id="hs_entrevista_fields" style="margin-top:14px;">
       <div class="row">
         <div class="field">
@@ -468,42 +542,76 @@
 
   <section class="card">
     <h2>Materiales y proyecciones</h2>
-    <div id="hs_entrada_publico_fields"></div>
-    <div class="output-hint" style="margin-top:-4px;margin-bottom:14px;">Rotulación y sobretitulado se toma de "Datos comunes".</div>
-    <div class="field">
-      <label>Proyección en sala — rotulación y sobretitulado</label>
-      <input type="text" id="hs_proyeccion_sala_rotulacion" placeholder="Ej: SI, en pantalla pequeña con proyector sobretítulos">
+    <div data-tipos="conciertos conferencias especiales biblioteca">
+      <div class="field">
+        <label id="lbl_entrada_publico">Entrada de público</label>
+        <textarea id="hs_entrada_publico" rows="3"></textarea>
+      </div>
+      <div class="field" id="hs_durante_azul_field">
+        <label>Durante entrevista en salón azul</label>
+        <textarea id="hs_durante_entrevista_azul" rows="2"></textarea>
+      </div>
     </div>
-    <div class="field">
-      <label>Otras proyecciones durante el acto</label>
+    <div data-tipos="conciertos especiales">
+      <div class="output-hint" style="margin-top:-4px;margin-bottom:14px;">Rotulación y sobretitulado se toma de "Datos comunes".</div>
+      <div class="field">
+        <label>Proyección en sala — rotulación y sobretitulado</label>
+        <input type="text" id="hs_proyeccion_sala_rotulacion" placeholder="Ej: SI, en pantalla pequeña con proyector sobretítulos">
+      </div>
+    </div>
+    <div data-tipos="conferencias especiales">
+      <div class="field">
+        <label>Presentación</label>
+        <input type="text" id="hs_conf_presentacion" placeholder="Ej: SI, con ppt">
+      </div>
+    </div>
+    <div data-tipos="conferencias especiales biblioteca">
+      <div class="field">
+        <label>Conferencia</label>
+        <input type="text" id="hs_conf_conferencia" placeholder="Ej: SI, con ppt">
+      </div>
+      <div class="row">
+        <div class="field"><label>Vídeos</label><input type="text" id="hs_videos"></div>
+        <div class="field"><label>Audios</label><input type="text" id="hs_audios"></div>
+      </div>
+    </div>
+    <div class="field" data-tipos="conciertos especiales palma">
+      <label id="lbl_otras_proy">Otras proyecciones durante el acto</label>
       <input type="text" id="hs_otras_proyecciones" placeholder="Ej: NO">
     </div>
-    <div class="field">
+    <div class="field" data-tipos="conciertos conferencias especiales biblioteca">
       <label>Avisos</label>
       <textarea id="hs_avisos" rows="3"></textarea>
     </div>
   </section>
 
-  <section class="card">
+  <section class="card" data-tipos="conciertos conferencias especiales biblioteca">
     <h2>Vídeo</h2>
     <div class="row">
       <div class="field"><label>Cámara extra</label><input type="text" id="hs_camara_extra" placeholder="Ej: NO"></div>
-      <div class="field"><label>Montaje</label><input type="text" id="hs_montaje_video"></div>
-      <div class="field"><label>Back up</label><input type="text" id="hs_backup"></div>
+      <div class="field" data-tipos="conciertos especiales"><label>Back up</label><input type="text" id="hs_backup"></div>
+    </div>
+    <div class="field">
+      <label>Montaje</label>
+      <textarea id="hs_montaje_video" rows="3"></textarea>
     </div>
   </section>
 
   <section class="card">
     <h2>Sonido</h2>
-    <div class="field">
+    <div class="field" data-tipos="conciertos especiales">
       <label>Locutor</label>
       <input type="text" id="hs_locutor">
     </div>
-    <div class="row">
+    <div class="row" data-tipos="conciertos especiales">
       <div class="field"><label>Rider / microfonía concierto</label><input type="text" id="hs_rider_microfonia"></div>
       <div class="field"><label>Intervenciones habladas</label><input type="text" id="hs_intervenciones_habladas" placeholder="Ej: seleccionar"></div>
     </div>
-    <div class="field">
+    <div class="field" data-tipos="conferencias especiales biblioteca palma">
+      <label id="lbl_microfonia_conf">Microfonía</label>
+      <textarea id="hs_microfonia_conf" rows="3"></textarea>
+    </div>
+    <div class="field" data-tipos="conciertos especiales">
       <label>Montaje sonido</label>
       <textarea id="hs_montaje_sonido" rows="2"></textarea>
     </div>
@@ -515,21 +623,31 @@
 
   <section class="card">
     <h2>Luces</h2>
-    <div class="field">
-      <label>Iluminación concierto</label>
-      <input type="text" id="hs_iluminacion_concierto">
+    <div data-tipos="conciertos especiales">
+      <div class="field">
+        <label id="lbl_ilum_concierto">Iluminación concierto</label>
+        <input type="text" id="hs_iluminacion_concierto">
+      </div>
+      <div class="field">
+        <label>Partituras</label>
+        <input type="text" id="hs_partituras">
+      </div>
     </div>
-    <div class="field">
-      <label>Partituras</label>
-      <input type="text" id="hs_partituras">
+    <div class="field" data-tipos="conferencias especiales biblioteca palma">
+      <label id="lbl_ilum_conf">Indicaciones iluminación</label>
+      <input type="text" id="hs_ilum_conf">
     </div>
-    <div class="field">
+    <div class="field" data-tipos="conferencias especiales biblioteca">
+      <label>Otras indicaciones</label>
+      <input type="text" id="hs_otras_indicaciones_luces">
+    </div>
+    <div class="field" data-tipos="conciertos conferencias especiales biblioteca">
       <label>Luz sala</label>
       <textarea id="hs_luz_sala" rows="3"></textarea>
     </div>
   </section>
 
-  <section class="card">
+  <section class="card" data-tipos="conciertos conferencias especiales biblioteca">
     <h2>Retransmisión</h2>
     <div class="row">
       <div class="field"><label>Salón azul</label><input type="text" id="hs_salon_azul" placeholder="Ej: SI"></div>
@@ -543,13 +661,13 @@
 
   <section class="card">
     <h2>Otros</h2>
-    <div class="field">
+    <div class="field" data-tipos="conciertos especiales">
       <label>Observaciones programa</label>
       <textarea id="hs_obs_programa" rows="2"></textarea>
     </div>
     <div class="field">
       <label>Otras observaciones</label>
-      <textarea id="hs_obs_otras" rows="2"></textarea>
+      <textarea id="hs_obs_otras" rows="3"></textarea>
     </div>
     <div class="field">
       <label>Vídeos referencia</label>
@@ -637,10 +755,85 @@ function saveFormaciones(obj){ localStorage.setItem(LS_FORMACIONES, JSON.stringi
 let formaciones = loadFormaciones();
 let lightingCurrentDataUrl = null;
 
-let state = { lang:'es', type:'interprete', single:false, genero:'f', rotulacion:'rotulos' };
+let state = { tipo:'conciertos', lang:'es', type:'interprete', single:false, genero:'f', rotulacion:'rotulos', presentacion:'no' };
+
+/* ---------- TIPOS DE ACTO Y FORMATOS ---------- */
+const TIPOS = {
+  conciertos:   { label:'Conciertos',       file:'CONCIERTOS' },
+  conferencias: { label:'Conferencias',     file:'CONFERENCIAS' },
+  especiales:   { label:'Actos especiales', file:'ACTOS ESPECIALES' },
+  biblioteca:   { label:'Biblioteca',       file:'BIBLIOTECA' },
+  palma:        { label:'Palma',            file:'PALMA' }
+};
+const DEPARTAMENTOS = { conciertos:'MÚSICA', conferencias:'CONFERENCIAS', especiales:'', biblioteca:'BIBLIOTECA', palma:'PALMA' };
+
+// [valor, texto que sale en los documentos, texto en el desplegable]
+const mismo = (v, l) => [v, l, l];
+const FORMATOS = {
+  conciertos: [
+    ['miercoles',  'CICLOS DE MIÉRCOLES',   'Ciclos de miércoles'],
+    ['sabado',     'CONCIERTOS DE SÁBADO',  'Conciertos de sábado'],
+    ['jovenes',    'JÓVENES INTÉRPRETES',   'Jóvenes intérpretes'],
+    ['didacticos', 'CONCIERTOS DIDÁCTICOS', 'Conciertos didácticos'],
+    ['viernes',    'VIERNES TEMÁTICOS',     'Viernes temáticos'],
+    ['reestrenos', 'AULA DE (RE)ESTRENOS',  'Aula de (re)estrenos']
+  ],
+  conferencias: [
+    mismo('palpitante', 'La cuestión palpitante'),
+    mismo('memorias', 'Memorias de la Fundación'),
+    mismo('ciclos_conf', 'Ciclos de conferencias'),
+    mismo('exposicion', 'La exposición explicada'),
+    mismo('cine', 'Cine en la March')
+  ],
+  especiales: [],
+  biblioteca: [
+    mismo('magia', 'Magia en la March'),
+    mismo('biblioteca_invita', 'La biblioteca invita')
+  ],
+  palma: [
+    mismo('oficios', 'Las artes y los oficios'),
+    mismo('mediterraneo', 'Sobre el Mediterráneo'),
+    mismo('arte', 'En torno al arte'),
+    mismo('vila_sanjuan', 'Conversaciones con Sergio Vila-Sanjuán'),
+    mismo('radiografia', 'La radiografía'),
+    mismo('creativos', 'Creativos, con Toni Segarra'),
+    mismo('lideres', 'Líderes de opinión')
+  ]
+};
+
+function isMiercoles(){ return state.tipo === 'conciertos' && cycleSelect.value === 'miercoles'; }
+
+// La plantilla del email solo distingue tres variantes; los demás formatos de concierto usan la genérica ("sábado")
+function emailCycleKey(){
+  const v = cycleSelect.value;
+  return ['miercoles','sabado','jovenes'].includes(v) ? v : 'sabado';
+}
 
 function getFormatoLabel(cycle){
-  return {miercoles:'CICLOS DE MIÉRCOLES', sabado:'CONCIERTOS DE SÁBADO', jovenes:'JÓVENES INTÉRPRETES'}[cycle] || '';
+  if(state.tipo === 'especiales'){
+    const el = document.getElementById('formatoLibre');
+    return el ? el.value.trim() : '';
+  }
+  const f = (FORMATOS[state.tipo] || []).find(x => x[0] === cycle);
+  return f ? f[1] : '';
+}
+
+function renderFormatoOptions(){
+  const list = FORMATOS[state.tipo] || [];
+  cycleSelect.innerHTML = '';
+  list.forEach(([v, , ui])=>{
+    const o = document.createElement('option');
+    o.value = v; o.textContent = ui;
+    cycleSelect.appendChild(o);
+  });
+  if(!list.length){
+    const o = document.createElement('option');
+    o.value = 'especial'; o.textContent = '(a mano)';
+    cycleSelect.appendChild(o);
+  }
+  const libre = state.tipo === 'especiales';
+  document.getElementById('formatoSelField').style.display = libre ? 'none' : '';
+  document.getElementById('formatoLibreField').style.display = libre ? '' : 'none';
 }
 
 /* ---------- UI: segmented controls ---------- */
@@ -676,6 +869,17 @@ document.querySelectorAll('#rotulacionSeg button').forEach(b=>{
     document.querySelectorAll('#rotulacionSeg button').forEach(x=>x.classList.remove('active'));
     b.classList.add('active'); state.rotulacion = b.dataset.val;
     document.getElementById('rotulacionDetalleField').style.display = state.rotulacion === 'ninguno' ? 'none' : 'block';
+  });
+});
+
+document.querySelectorAll('#tipoSeg button').forEach(b=>{
+  b.addEventListener('click', ()=> setTipo(b.dataset.val, true));
+});
+document.querySelectorAll('#presentacionSeg button').forEach(b=>{
+  b.addEventListener('click', ()=>{
+    document.querySelectorAll('#presentacionSeg button').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active'); state.presentacion = b.dataset.val;
+    document.getElementById('presentacionCargoField').style.display = state.presentacion === 'si' ? '' : 'none';
   });
 });
 
@@ -813,13 +1017,34 @@ function addObraRow(){
 /* ---------- HORARIOS DINÁMICOS POR CICLO ---------- */
 const cycleSelect = document.getElementById('cycle');
 cycleSelect.addEventListener('change', ()=>{ renderScheduleFields(); });
+renderFormatoOptions();
+
+/* ---------- LUGAR ---------- */
+const lugarSel = document.getElementById('lugarSel');
+lugarSel.addEventListener('change', ()=>{
+  document.getElementById('lugarOtroField').style.display = lugarSel.value === 'otro' ? '' : 'none';
+});
+function setLugarValue(name){
+  const existe = Array.from(lugarSel.options).some(o => o.value === name && o.value !== 'otro');
+  if(existe){
+    lugarSel.value = name;
+    document.getElementById('lugarOtro').value = '';
+  } else {
+    lugarSel.value = 'otro';
+    document.getElementById('lugarOtro').value = name;
+  }
+  lugarSel.dispatchEvent(new Event('change'));
+}
+function getLugar(){
+  return lugarSel.value === 'otro' ? document.getElementById('lugarOtro').value.trim() : lugarSel.value;
+}
 
 function fieldHtml(id, label, type='text', extra=''){
   return `<div class="field"><label>${label}</label><input type="${type}" id="${id}" ${extra}></div>`;
 }
 
 function renderScheduleFields(){
-  const cycle = cycleSelect.value;
+  const cycle = emailCycleKey();
   const box = document.getElementById('scheduleFields');
   const hint = document.getElementById('scheduleHint');
 
@@ -1130,7 +1355,7 @@ function buildGreeting(lang, single, genero, names){
 async function buildEmail(){
   const lang = state.lang;
   const type = state.type; // interprete | representante | ambos
-  const cycle = cycleSelect.value;
+  const cycle = emailCycleKey();
   const t = T[lang];
   const direct = type === 'interprete' || type === 'ambos';
   const single = lang === 'es' && direct && state.single; // afecta a la conjugación del cuerpo (tú vs vosotros)
@@ -1376,7 +1601,7 @@ function getFormSnapshot(){
       return { type:'descanso', duracion: item.querySelector('.esc-descanso-duracion').value };
     }
     return {
-      type:'obra',
+      type: item.classList.contains('esc-bloque') ? 'bloque' : 'obra',
       texto: item.querySelector('.esc-obra-texto').value,
       formacion: item.querySelector('.esc-obra-formacion').value
     };
@@ -1384,6 +1609,16 @@ function getFormSnapshot(){
   const data = {
     // --- compartidos ---
     cycle: cycleSelect.value,
+    tipo: state.tipo,
+    formatoLibre: val('formatoLibre'),
+    departamento: val('departamento'),
+    lugarSel: lugarSel.value,
+    lugarOtro: val('lugarOtro'),
+    pruebasTecnicas: val('pruebasTecnicas'),
+    ponentes: val('ponentes'),
+    presentacion: state.presentacion,
+    presentacionCargo: val('presentacionCargo'),
+    disposicionEscenario: val('disposicionEscenario'),
     esc_fecha: escVal('esc_fecha'),
     hs_ciclo: val('hs_ciclo'),
     hs_acto: val('hs_acto'),
@@ -1421,6 +1656,7 @@ function getFormSnapshot(){
     esc_t_dingdong: escVal('esc_t_dingdong'),
     esc_t_locutor: escVal('esc_t_locutor'),
     esc_t_aviso: escVal('esc_t_aviso'),
+    esc_t_inicio: escVal('esc_t_inicio'),
     escItems,
     esc_bis: escVal('esc_bis'),
     esc_fotos: escVal('esc_fotos')
@@ -1433,8 +1669,10 @@ function getFormSnapshot(){
 }
 
 function applyFormSnapshot(s){
-  // ciclo
-  cycleSelect.value = s.cycle || 'miercoles';
+  // tipo de acto y formato (sin aplicar valores por defecto: se restauran los guardados)
+  const tipoRestaurado = s.tipo || 'conciertos';
+  setTipo(tipoRestaurado, false);
+  if(s.cycle && Array.from(cycleSelect.options).some(o => o.value === s.cycle)) cycleSelect.value = s.cycle;
   renderScheduleFields();
   renderEscaletaPreBlock();
   renderHojaServicioFields();
@@ -1498,6 +1736,20 @@ function applyFormSnapshot(s){
   setIfExists('j1_prueba', s.j1_prueba);
   setIfExists('j2_date', s.j2_date);
 
+  // --- campos del tipo de acto ---
+  document.getElementById('formatoLibre').value = s.formatoLibre || '';
+  document.getElementById('departamento').value = (s.departamento !== undefined) ? s.departamento : (DEPARTAMENTOS[tipoRestaurado] || '');
+  lugarSel.value = s.lugarSel || 'Auditorio';
+  document.getElementById('lugarOtro').value = s.lugarOtro || '';
+  lugarSel.dispatchEvent(new Event('change'));
+  document.getElementById('pruebasTecnicas').value = s.pruebasTecnicas || '';
+  document.getElementById('ponentes').value = s.ponentes || '';
+  state.presentacion = s.presentacion || 'no';
+  document.querySelectorAll('#presentacionSeg button').forEach(b=> b.classList.toggle('active', b.dataset.val === state.presentacion));
+  document.getElementById('presentacionCargoField').style.display = state.presentacion === 'si' ? '' : 'none';
+  document.getElementById('presentacionCargo').value = s.presentacionCargo || '';
+  document.getElementById('disposicionEscenario').value = s.disposicionEscenario || '';
+
   // bloques de día
   dayBlocksBox.innerHTML = '';
   (s.dayBlocks && s.dayBlocks.length ? s.dayBlocks : [{}]).forEach(db=>{
@@ -1532,15 +1784,17 @@ function applyFormSnapshot(s){
   setIfExists('esc_t_dingdong', s.esc_t_dingdong);
   setIfExists('esc_t_locutor', s.esc_t_locutor);
   setIfExists('esc_t_aviso', s.esc_t_aviso);
+  setIfExists('esc_t_inicio', s.esc_t_inicio);
 
   const escBox = document.getElementById('escaletaObras');
   escBox.innerHTML = '';
-  (s.escItems && s.escItems.length ? s.escItems : [{type:'obra'}]).forEach(it=>{
+  const tipoConObras = (tipoRestaurado === 'conciertos' || tipoRestaurado === 'especiales');
+  (s.escItems && s.escItems.length ? s.escItems : [{type: tipoConObras ? 'obra' : 'bloque'}]).forEach(it=>{
     if(it.type === 'descanso'){
       addDescansoItem();
       escBox.lastElementChild.querySelector('.esc-descanso-duracion').value = it.duracion || '';
     } else {
-      addObraItem();
+      if(it.type === 'bloque') addBloqueItem(); else addObraItem();
       const item = escBox.lastElementChild;
       item.querySelector('.esc-obra-texto').value = it.texto || '';
       item.querySelector('.esc-obra-formacion').value = it.formacion || '';
@@ -1557,9 +1811,12 @@ function applyFormSnapshot(s){
 }
 
 function historialLabel(s){
-  const cycleNames = {miercoles:'Miércoles', sabado:'Sábado', jovenes:'Jóvenes intérpretes'};
-  const parts = [cycleNames[s.cycle] || s.cycle];
-  if(s.names) parts.push(s.names);
+  const tipo = s.tipo || 'conciertos';
+  const parts = [(TIPOS[tipo] || {}).label || tipo];
+  const f = (FORMATOS[tipo] || []).find(x => x[0] === s.cycle);
+  if(f) parts.push(f[2]); else if(s.formatoLibre) parts.push(s.formatoLibre);
+  const quien = s.names || s.ponentes || '';
+  if(quien) parts.push(quien.split('\n')[0]);
   return parts.join(' — ');
 }
 
@@ -1621,7 +1878,7 @@ document.getElementById('closeHistorialBtn').addEventListener('click', ()=>{
 });
 
 document.getElementById('newConcertBtn').addEventListener('click', ()=>{
-  if(confirm('¿Empezar un concierto nuevo? Se perderán los datos actuales que no hayas guardado como borrador (los planos, la URL del traductor y el historial de borradores no se ven afectados).')){
+  if(confirm('¿Empezar un acto nuevo? Se perderán los datos actuales que no hayas guardado como borrador (los planos, la URL del traductor y el historial de borradores no se ven afectados).')){
     location.reload();
   }
 });
@@ -1638,7 +1895,7 @@ const ESC_COLOR = {
   none:   null
 };
 
-function escIsMiercoles(){ return cycleSelect.value === 'miercoles'; }
+function escIsMiercoles(){ return isMiercoles(); }
 
 /* ---------- Bloque de inicio (varía según ciclo) ---------- */
 const ESC_PRE_DEFAULTS = {
@@ -1650,11 +1907,25 @@ function renderEscaletaPreBlock(){
   const box = document.getElementById('esc_pre_block');
   const hint = document.getElementById('escPreHint');
   const descansoBtn = document.getElementById('escAddDescansoBtn');
+  descansoBtn.style.display = (escIsMiercoles() || state.tipo === 'especiales') ? '' : 'none';
+
+  if(state.tipo !== 'conciertos'){
+    hint.textContent = 'Deja en blanco los horarios que quieras que se calculen solos a partir de la hora (puertas 30 min antes; ding dong y aviso de móviles 5 min antes).';
+    box.innerHTML = `
+      <div class="row">
+        ${fieldHtml('esc_t_puertas','Hora apertura de puertas','text','placeholder="auto"')}
+        ${fieldHtml('esc_t_dingdong','Hora ding dong cafetería','text','placeholder="auto"')}
+      </div>
+      <div class="row">
+        ${fieldHtml('esc_t_aviso','Hora aviso de móviles','text','placeholder="auto"')}
+        ${fieldHtml('esc_t_inicio','Hora de inicio del acto','text','placeholder="auto (la hora del acto)"')}
+      </div>`;
+    return;
+  }
 
   if(escIsMiercoles()){
     const d = ESC_PRE_DEFAULTS.miercoles;
     hint.textContent = 'Con entrevista de radio antes del concierto (siempre en este ciclo). Horarios estándar prellenados — edítalos si hay alguna excepción.';
-    descansoBtn.style.display = '';
     box.innerHTML = `
       <div class="row">
         ${fieldHtml('esc_t_carta','Hora carta de ajuste')}
@@ -1678,8 +1949,7 @@ function renderEscaletaPreBlock(){
     document.getElementById('esc_t_aviso').value = d.aviso;
   } else {
     const d = ESC_PRE_DEFAULTS.otros;
-    hint.textContent = 'Sin entrevista de radio ni descanso (sábado / jóvenes intérpretes). Horarios estándar prellenados — edítalos si hay alguna excepción.';
-    descansoBtn.style.display = 'none';
+    hint.textContent = 'Sin entrevista de radio ni descanso. Horarios estándar (los de sábado / jóvenes intérpretes) prellenados — edítalos si hay alguna excepción.';
     box.innerHTML = `
       <div class="row">
         ${fieldHtml('esc_t_puertas','Hora apertura de puertas')}
@@ -1740,7 +2010,32 @@ function addDescansoItem(){
   document.getElementById('escaletaObras').appendChild(div);
 }
 
+function addBloqueItem(){
+  const div = document.createElement('div');
+  div.className = 'esc-item esc-bloque';
+  div.innerHTML = `
+    <div class="row" style="align-items:flex-start;">
+      <div class="field" style="flex:2;margin-bottom:0;">
+        <label>Bloque (conferencia, presentación, coloquio…)</label>
+        <div class="row" style="gap:6px;margin-bottom:6px;">
+          <button type="button" class="btn small ghost esc-bold-btn" style="font-weight:700;">B</button>
+          <button type="button" class="btn small ghost esc-italic-btn" style="font-style:italic;">I</button>
+        </div>
+        <textarea class="esc-obra-texto" rows="3" placeholder="Conferencia (con ppt)"></textarea>
+        <div class="esc-item-hint">Selecciona texto y pulsa B/I para negrita o cursiva.</div>
+      </div>
+      <div class="field" style="flex:1;margin-bottom:0;">
+        <label>Movimiento de escenario</label>
+        <input type="text" class="esc-obra-formacion" placeholder="Ej: ponente en atril">
+      </div>
+      <button type="button" class="btn small ghost esc-item-del" style="flex:0 0 auto;margin-top:22px;">✕</button>
+    </div>`;
+  div.querySelector('.esc-item-del').addEventListener('click', ()=> div.remove());
+  document.getElementById('escaletaObras').appendChild(div);
+}
+
 document.getElementById('escAddObraBtn').addEventListener('click', addObraItem);
+document.getElementById('escAddBloqueBtn').addEventListener('click', addBloqueItem);
 document.getElementById('escAddDescansoBtn').addEventListener('click', addDescansoItem);
 addObraItem(); // primera obra por defecto
 
@@ -1869,6 +2164,47 @@ function escAddObraBlock(ws, texto, formacion, locucionLabel){
   escAddRow(ws, ['', '', locucionLabel, '', '', '', '', 'Streaming + salón azul'], ESC_COLOR.blue);
 }
 
+function shiftTime(hhmm, deltaMin){
+  const m = String(hhmm || '').match(/^(\d{1,2})[:.](\d{2})/);
+  if(!m) return '';
+  let total = parseInt(m[1], 10) * 60 + parseInt(m[2], 10) + deltaMin;
+  total = ((total % 1440) + 1440) % 1440;
+  return `${Math.floor(total / 60)}:${String(total % 60).padStart(2, '0')}`;
+}
+
+function escAddBloqueBlock(ws, texto, movimiento){
+  escAddRow(ws, ['', '', escRichValue(texto), movimiento || '', '', '', '', ''], ESC_COLOR.pink);
+  escAddRow(ws, ['', '', 'Aplausos', '', '', '', 'Glorias', ''], ESC_COLOR.none);
+}
+
+function escBuildPreBlockActo(ws){
+  const hora = escVal('hs_hora');
+  const auto = (id, delta) => escVal(id) || (hora ? shiftTime(hora, delta) : '');
+  const tPuertas = auto('esc_t_puertas', -30);
+  const tDing = auto('esc_t_dingdong', -5);
+  const tAviso = auto('esc_t_aviso', -5);
+  const tInicio = escVal('esc_t_inicio') || hora;
+  const esp = state.tipo === 'especiales';
+  escAddRow(ws, [tPuertas, '', 'Apertura puertas\nEntrada público', '', 'Imagen acto para entrada de público', 'Hilo musical', 'protocolo luces entrada público', ''], ESC_COLOR.yellow);
+  escAddRow(ws, [tDing, '', 'Ding dong en cafetería\n(coordinado con mantenimiento)', '', '', '', '', 'cafetería'], ESC_COLOR.gold);
+  escAddRow(ws, ['', '', 'Fin hilo musical', '', '', 'Quitar hilo musical', '', ''], ESC_COLOR.none);
+  escAddRow(ws, [tAviso, '', 'Aviso de móviles', '', '', 'Coordinado con mantenimiento', '', ''], ESC_COLOR.yellow);
+  escAddRow(ws, [tInicio, '', esp ? 'Entrada participantes' : 'Entrada ponente/s', '', '', '', 'protocolo luces inicio acto', ''], ESC_COLOR.none);
+  if(state.presentacion === 'si' && (state.tipo === 'conferencias' || esp)){
+    const cargo = val('presentacionCargo');
+    escAddRow(ws, ['', '', 'Presentación del acto' + (cargo ? `\na cargo de ${cargo}` : ''), '', '', '', '', ''], ESC_COLOR.pink);
+  }
+}
+
+function escBuildFinalBlockActo(ws){
+  const fotos = escVal('esc_fotos');
+  escAddRow(ws, ['', '', state.tipo === 'especiales' ? 'Salida participantes' : 'Salida ponente/s', '', '', '', 'Glorias', ''], ESC_COLOR.none);
+  escAddRow(ws, ['', '', 'FIN EVENTO', '', '', '', 'protocolo luces salida público', ''], ESC_COLOR.yellow);
+  if(fotos){
+    escAddRow(ws, ['', '', fotos, '', '', '', '', ''], ESC_COLOR.none);
+  }
+}
+
 function escBuildPreBlockMiercoles(ws){
   escAddRow(ws, [escVal('esc_t_carta'), '', 'Carta de ajuste', '', 'Desde Qlab', 'Desde iMac', '', 'Streaming + salón azul'], ESC_COLOR.blue);
   escAddRow(ws, [escVal('esc_t_cartela'), '', 'Cartela inicio acto', '', 'Desde atem', '', '', 'Streaming + salón azul'], ESC_COLOR.blue);
@@ -1934,24 +2270,33 @@ document.getElementById('generateEscaletaBtn').addEventListener('click', async (
       {width:10.13},{width:9},{width:44},{width:26},{width:22},{width:24},{width:22},{width:20}
     ];
 
+    const tipo = state.tipo;
+    const showConcierto = (tipo === 'conciertos' || tipo === 'especiales');
     const miercoles = escIsMiercoles();
     const locucionLabel = miercoles ? 'Locución RNE' : 'Locución';
 
     const fechaTexto = formatFechaLarga(escVal('esc_fecha')) || escVal('esc_fecha');
     const cicloLineas = [getFormatoLabel(cycleSelect.value), escVal('hs_ciclo'), escVal('hs_acto')].filter(Boolean);
     const cicloTexto = cicloLineas.join('\n');
-    const interpretesTexto = val('names');
+    let participantesTexto;
+    if(tipo === 'conciertos') participantesTexto = val('names');
+    else if(tipo === 'especiales') participantesTexto = [val('names'), val('ponentes')].filter(Boolean).join('\n');
+    else participantesTexto = val('ponentes');
 
     escAddMergedHeaderRow(ws, fechaTexto);
     escAddMergedHeaderRow(ws, cicloTexto);
-    escAddMergedHeaderRow(ws, interpretesTexto);
+    escAddMergedHeaderRow(ws, participantesTexto);
     ws.addRow(['']); // fila 4, espaciadora
 
     escAddRow(ws, ['INICIO','DURACIÓN','ACCIÓN/OBRAS','MOVIMIENTO ESCENARIO','VÍDEO','SONIDO','LUCES','ENVÍO A:'], null);
     const headerRow = ws.getRow(5);
     for(let c=1;c<=8;c++){ headerRow.getCell(c).font = {name:'Arial', size:10, bold:true}; headerRow.getCell(c).alignment = {vertical:'middle', horizontal:'center', wrapText:true}; }
 
-    if(miercoles){ escBuildPreBlockMiercoles(ws); } else { escBuildPreBlockManana(ws); }
+    if(tipo === 'conciertos'){
+      if(miercoles){ escBuildPreBlockMiercoles(ws); } else { escBuildPreBlockManana(ws); }
+    } else {
+      escBuildPreBlockActo(ws);
+    }
 
     const items = Array.from(document.querySelectorAll('#escaletaObras > .esc-item'));
     items.forEach(item=>{
@@ -1962,19 +2307,19 @@ document.getElementById('generateEscaletaBtn').addEventListener('click', async (
         const texto = item.querySelector('.esc-obra-texto').value.trim();
         if(!texto) return;
         const formacion = item.querySelector('.esc-obra-formacion').value.trim();
-        escAddObraBlock(ws, texto, formacion, locucionLabel);
+        if(item.classList.contains('esc-bloque')) escAddBloqueBlock(ws, texto, formacion);
+        else escAddObraBlock(ws, texto, formacion, locucionLabel);
       }
     });
 
-    escBuildFinalBlock(ws, locucionLabel);
+    if(showConcierto){ escBuildFinalBlock(ws, locucionLabel); } else { escBuildFinalBlockActo(ws); }
 
     const buffer = await wb.xlsx.writeBuffer();
     const blob = new Blob([buffer], {type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
     const url = URL.createObjectURL(blob);
-    const isoDate = escVal('esc_fecha') || 'sin-fecha';
     const a = document.createElement('a');
     a.href = url;
-    a.download = `Escaleta_${isoDate}.xlsx`;
+    a.download = buildDocFilename('Escaleta', escVal('esc_fecha'), escVal('hs_hora'), docTipoFile(true));
     document.body.appendChild(a);
     a.click();
     a.remove();
@@ -2034,55 +2379,183 @@ function computeTemporadaDefault(){
   return `${startYear}-${startYear + 1}`;
 }
 
+const HS_CONF_DEFAULTS = {
+  entrada: '**SI, imagen acto + hilo musical**',
+  avisos: `Ding dong cafetería 5 minutos antes de inicio
+Aviso de móviles coordinado con mantenimiento`,
+  montaje: `pantalla de proyección habitual
+retroproyección
+remoto control retro
+PPT en PC1
+mando digital
+**BUP proyector frontal ajustado**
+**BUP PPT en PC2**
+**BUP mandos digital y láser verde (abajo en trasescena)**`,
+  microfonia: `Inalámbrico para ponente
+Mic podium o mic mano en pie para presentación según disposición escenario.
+Monitores en suelo dirigidos a público para reforzar sonido en primeras filas
+**BUP petaca + solapa**
+**BUP micro mano**`,
+  subida: 'íntegro, se sube al día siguiente laborable',
+  ilum: 'iluminación estándar conferencia'
+};
+const HS_PALMA_DEFAULTS = {
+  pruebas: `15H encendido y chequeo equipos
+16H pruebas técnicas madrid-palma
+17:00H pruebas con ponente
+17:30H FIN pruebas técnicas
+17:40H apertura de puertas
+17:55H chequeo colocación microfonía/pilas/recepción señal`,
+  microfonia: 'Microfonía inalámbrica',
+  subida: 'Pedir indicaciones a Aina',
+  ilum: 'iluminación estándar conferencia Palma',
+  obs: `https://www.march.es/es/palma
+**email de sergio 22/5/26:**
+el ordenador de TONI ahora es el PC TRADUCCION y que os entra a vMIX por la entrada 2 de la tarjeta Blackmagic
+Ahora ese ordenador lo vamos a usar también para los PPT, videos y demás.
+Ese ordenador entra de dos formas a vMIX: directamente por la SDI 2 de la tarjeta de Blackmagic o, si lo configuramos en la matriz, también por la entrada 1. Esto es así para poder hacer incrustaciones con la traducción simultánea pero esa es otra historia.
+vmix con ordenador TRADUCCION.png: https://drive.google.com/file/d/1zBNaw7JbA8uOpORCOGy7nvPued90MAEJ/view?usp=drive_link`
+};
+
+// Hora habitual de cada formato (vacío = sin hora estándar, se escribe a mano)
+function defaultHora(t, f){
+  if(t === 'conciertos') return ({miercoles:'18:00', sabado:'12:00', jovenes:'12:00'})[f] || '';
+  if(t === 'conferencias') return '18:30';
+  if(t === 'palma') return '18:00';
+  return '';
+}
+
+// Muestra/oculta y rotula los campos de la hoja de servicio según el tipo y el formato
 function renderHojaServicioFields(){
-  const miercoles = cycleSelect.value === 'miercoles';
-  document.getElementById('hs_entrevista_fields').style.display = miercoles ? 'block' : 'none';
-
-  const entradaBox = document.getElementById('hs_entrada_publico_fields');
-  if(miercoles && !document.getElementById('hs_durante_entrevista_azul')){
-    entradaBox.innerHTML = `
-      <div class="field">
-        <label>Entrada de público / durante entrevista en auditorio</label>
-        <textarea id="hs_entrada_publico" rows="4"></textarea>
-      </div>
-      <div class="field">
-        <label>Durante entrevista en salón azul</label>
-        <textarea id="hs_durante_entrevista_azul" rows="2"></textarea>
-      </div>`;
-  } else if(!miercoles && document.getElementById('hs_durante_entrevista_azul')){
-    entradaBox.innerHTML = `
-      <div class="field">
-        <label>Entrada de público</label>
-        <textarea id="hs_entrada_publico" rows="2"></textarea>
-      </div>`;
-  } else if(!document.getElementById('hs_entrada_publico')){
-    entradaBox.innerHTML = `
-      <div class="field">
-        <label>Entrada de público${miercoles ? ' / durante entrevista en auditorio' : ''}</label>
-        <textarea id="hs_entrada_publico" rows="${miercoles ? 4 : 2}"></textarea>
-      </div>${miercoles ? `<div class="field"><label>Durante entrevista en salón azul</label><textarea id="hs_durante_entrevista_azul" rows="2"></textarea></div>` : ''}`;
-  }
-  fillIfEmpty('hs_entrada_publico', miercoles ? HS_DEFAULTS.entradaPublicoMiercoles : HS_DEFAULTS.entradaPublicoOtros);
-  if(miercoles) fillIfEmpty('hs_durante_entrevista_azul', HS_DEFAULTS.duranteEntrevistaAzul);
-
-  forceSet('hs_hora', miercoles ? '18:00' : '12:00');
-  fillIfEmpty('hs_avisos', HS_DEFAULTS.avisos);
-  fillIfEmpty('hs_subida_audio', HS_DEFAULTS.subidaAudio);
-  fillIfEmpty('hs_luz_sala', HS_DEFAULTS.luzSala);
-  fillIfEmpty('hs_cafeteria', HS_DEFAULTS.cafeteria);
-  fillIfEmpty('hs_ruta_preservacion', HS_DEFAULTS.rutaPreservacion);
-  fillIfEmpty('hs_materiales_link', HS_DEFAULTS.materialesLink);
-  fillIfEmpty('hs_materiales_ruta', `INFORTREND/actos/capturas/${computeTemporadaDefault()}/1T`);
-  forceSet('hs_locutor', miercoles ? HS_DEFAULTS.locutorMiercoles : HS_DEFAULTS.locutorOtros);
-  forceSet('hs_montaje_sonido', miercoles ? HS_DEFAULTS.montajeSonidoMiercoles : '');
-  forceSet('hs_salon_azul', miercoles ? 'SI' : '');
-  forceSet('hs_streaming', miercoles ? 'SI' : '');
-  if(miercoles){
-    forceSet('hs_lugar_entrevista', 'SALÓN AZUL');
-  }
+  const m = isMiercoles();
+  const palma = state.tipo === 'palma';
+  document.getElementById('hs_entrevista_fields').style.display = m ? 'block' : 'none';
+  document.getElementById('hs_durante_azul_field').style.display = m ? 'block' : 'none';
+  const lbl = (id, txt)=>{ const el = document.getElementById(id); if(el) el.textContent = txt; };
+  lbl('lbl_entrada_publico', m ? 'Entrada de público / durante entrevista en auditorio' : 'Entrada de público');
+  lbl('lbl_microfonia_conf', palma ? 'Indicaciones audio' : 'Microfonía');
+  lbl('lbl_otras_proy', palma ? 'Proyecciones' : 'Otras proyecciones durante el acto');
+  lbl('lbl_ilum_concierto', m ? 'Indicaciones iluminación concierto' : 'Iluminación concierto');
 }
 cycleSelect.addEventListener('change', renderHojaServicioFields);
 renderHojaServicioFields();
+
+// Valores estándar que dependen del formato (solo conciertos)
+function applyFormatoDefaults(){
+  const t = state.tipo, f = cycleSelect.value;
+  const h = defaultHora(t, f);
+  if(h) forceSet('hs_hora', h);
+  if(t === 'conciertos'){
+    const m = (f === 'miercoles');
+    forceSet('hs_locutor', m ? HS_DEFAULTS.locutorMiercoles : HS_DEFAULTS.locutorOtros);
+    forceSet('hs_montaje_sonido', m ? HS_DEFAULTS.montajeSonidoMiercoles : '');
+    forceSet('hs_salon_azul', m ? 'SI' : '');
+    forceSet('hs_streaming', m ? 'SI' : '');
+    forceSet('hs_entrada_publico', m ? HS_DEFAULTS.entradaPublicoMiercoles : HS_DEFAULTS.entradaPublicoOtros);
+    forceSet('hs_durante_entrevista_azul', m ? HS_DEFAULTS.duranteEntrevistaAzul : '');
+    if(m) forceSet('hs_lugar_entrevista', 'SALÓN AZUL');
+  }
+}
+cycleSelect.addEventListener('change', applyFormatoDefaults);
+
+// Valores estándar de cada tipo de acto (se aplican al cambiar de tipo)
+function applyTipoDefaults(){
+  const t = state.tipo;
+  const isConf = t === 'conferencias', isBib = t === 'biblioteca', isPalma = t === 'palma';
+  const confLike = isConf || isBib;
+  const conf = HS_CONF_DEFAULTS, pal = HS_PALMA_DEFAULTS;
+
+  forceSet('departamento', DEPARTAMENTOS[t] || '');
+  setLugarValue(isPalma ? 'Sala ampliada' : 'Auditorio');
+  forceSet('hs_hora', defaultHora(t, cycleSelect.value));
+  const hora = document.getElementById('hs_hora').value.trim();
+
+  let pruebas = '', programa = '';
+  if(isConf){
+    pruebas = `${hora ? shiftTime(hora, -60) : '17:30'} Prueba técnica con ponente`;
+    if(hora){
+      programa = [
+        `${shiftTime(hora, -30)} Imagen acto para entrada de público, hilo musical`,
+        `${shiftTime(hora, -5)} Ding dong en cafetería (coordinado con mantenimiento)`,
+        'Fin hilo musical',
+        'Aviso de móviles',
+        `${hora} Conferencia (con ppt)`
+      ].join('\n');
+    }
+  }
+  if(isPalma) pruebas = pal.pruebas;
+  forceSet('pruebasTecnicas', pruebas);
+  forceSet('hs_programa_link', programa);
+
+  forceSet('hs_avisos', confLike ? conf.avisos : HS_DEFAULTS.avisos);
+  forceSet('hs_entrada_publico', confLike ? conf.entrada : '');
+  forceSet('hs_durante_entrevista_azul', '');
+  forceSet('hs_montaje_video', confLike ? conf.montaje : '');
+  forceSet('hs_camara_extra', confLike ? 'NO' : '');
+  forceSet('hs_microfonia_conf', isPalma ? pal.microfonia : (confLike ? conf.microfonia : ''));
+  forceSet('hs_subida_audio', isPalma ? pal.subida : (confLike ? conf.subida : HS_DEFAULTS.subidaAudio));
+  forceSet('hs_ilum_conf', isPalma ? pal.ilum : (isConf ? conf.ilum : ''));
+  forceSet('hs_otras_proyecciones', '');
+  ['hs_conf_presentacion','hs_conf_conferencia','hs_videos','hs_audios','hs_otras_indicaciones_luces'].forEach(id => forceSet(id, ''));
+  forceSet('hs_obs_otras', isPalma ? pal.obs : '');
+  forceSet('hs_materiales_link', isPalma ? '' : HS_DEFAULTS.materialesLink);
+  forceSet('hs_salon_azul', isConf ? 'SI' : '');
+  forceSet('hs_streaming', isConf ? 'SI' : '');
+  forceSet('hs_locutor', '');
+  forceSet('hs_montaje_sonido', '');
+
+  fillIfEmpty('hs_luz_sala', HS_DEFAULTS.luzSala);
+  fillIfEmpty('hs_cafeteria', HS_DEFAULTS.cafeteria);
+  fillIfEmpty('hs_ruta_preservacion', HS_DEFAULTS.rutaPreservacion);
+  fillIfEmpty('hs_materiales_ruta', `INFORTREND/actos/capturas/${computeTemporadaDefault()}/1T`);
+}
+
+// Deja la lista de la escaleta con un único elemento vacío del tipo adecuado
+function resetEscaletaItems(){
+  const box = document.getElementById('escaletaObras');
+  box.innerHTML = '';
+  if(state.tipo === 'conciertos' || state.tipo === 'especiales'){
+    addObraItem();
+  } else {
+    addBloqueItem();
+    if(state.tipo === 'conferencias') box.lastElementChild.querySelector('.esc-obra-texto').value = 'Conferencia (con ppt)';
+  }
+}
+
+// Muestra solo lo que corresponde al tipo de acto elegido
+function applyTipoVisibility(){
+  document.querySelectorAll('[data-tipos]').forEach(el=>{
+    el.style.display = el.dataset.tipos.split(/\s+/).includes(state.tipo) ? '' : 'none';
+  });
+}
+
+function setTipo(tipo, applyDefaults){
+  state.tipo = tipo;
+  document.querySelectorAll('#tipoSeg button').forEach(b=> b.classList.toggle('active', b.dataset.val === tipo));
+  renderFormatoOptions();
+  applyTipoVisibility();
+
+  // La plantilla de email solo tiene sentido en conciertos y actos especiales
+  const emailOk = (tipo === 'conciertos' || tipo === 'especiales');
+  document.querySelector('.tab-btn[data-tab="email"]').style.display = emailOk ? '' : 'none';
+  if(!emailOk && document.getElementById('tab-email').classList.contains('active')){
+    document.querySelector('.tab-btn[data-tab="comunes"]').click();
+  }
+
+  if(applyDefaults){
+    applyTipoDefaults();
+    applyFormatoDefaults();
+    resetEscaletaItems();
+  }
+  renderScheduleFields();
+  renderEscaletaPreBlock();
+  renderHojaServicioFields();
+}
+
+document.getElementById('copyPruebasBtn').addEventListener('click', ()=>{
+  const texto = buildScheduleParagraphs('es').map(p => p.replace(/§§(.*?)§§/g, '$1')).join('\n');
+  forceSet('pruebasTecnicas', texto);
+});
 
 /* ---------- Utilidades de fecha / nombre de archivo ---------- */
 const HS_MESES_LARGOS = ['ene','feb','mar','abr','may','jun','jul','ago','sept','oct','nov','dic'];
@@ -2095,18 +2568,29 @@ function formatFechaHojaServicio(isoDate){
   return `${d} ${HS_MESES_LARGOS[m - 1]} ${y}`;
 }
 
-function buildHojaServicioFilename(isoDate, hora, miercoles){
+function fileHourPart(hora){
+  const m = String(hora || '').match(/(\d{1,2})(?:[:.hH](\d{2}))?/);
+  if(!m) return '';
+  return (m[2] && m[2] !== '00') ? ` ${m[1]}_${m[2]}H` : ` ${m[1]}H`;
+}
+
+// [1 SEP (M) 18H] Hoja de Servicio CONCIERTOS.xlsx   ·   [15 OCT (J) 18_30H] Hoja de Servicio CONFERENCIAS.xlsx
+function buildDocFilename(kind, isoDate, hora, tipoFile){
   let datePart = 'sin fecha';
   if(isoDate){
     const [y, m, d] = isoDate.split('-').map(Number);
     const dateObj = new Date(y, m - 1, d);
-    const letra = HS_DIAS_LETRA[dateObj.getDay()];
-    datePart = `${d} ${HS_MESES_CORTOS[m - 1]} (${letra})`;
+    datePart = `${d} ${HS_MESES_CORTOS[m - 1]} (${HS_DIAS_LETRA[dateObj.getDay()]})`;
   }
-  const horaNum = (String(hora || '').match(/\d{1,2}/) || [''])[0];
-  const horaPart = horaNum ? ` ${horaNum}H` : '';
-  const tipo = miercoles ? 'CONCIERTOS MIÉRCOLES' : 'CONCIERTOS';
-  return `[${datePart}${horaPart}] Hoja de Servicio ${tipo}.xlsx`;
+  return `[${datePart}${fileHourPart(hora)}] ${kind} ${tipoFile}.xlsx`;
+}
+
+function docTipoFile(paraEscaleta){
+  if(state.tipo === 'conciertos'){
+    if(isMiercoles()) return paraEscaleta ? 'CICLO MIÉRCOLES' : 'CONCIERTOS MIÉRCOLES';
+    return 'CONCIERTOS';
+  }
+  return (TIPOS[state.tipo] || {}).file || 'ACTO';
 }
 
 /* ---------- Generar y descargar ---------- */
@@ -2174,101 +2658,176 @@ document.getElementById('generateHojaServicioBtn').addEventListener('click', asy
       return row;
     }
 
-    const cycle = cycleSelect.value;
-    const miercoles = cycle === 'miercoles';
+    const tipo = state.tipo;
+    const isConcert = tipo === 'conciertos', isEsp = tipo === 'especiales', isConf = tipo === 'conferencias';
+    const isBib = tipo === 'biblioteca', isPalma = tipo === 'palma';
+    const showConcierto = isConcert || isEsp;
+    const showConf = isConf || isBib || isEsp;
+    const miercoles = isMiercoles();
+
     const isoDate = escVal('esc_fecha');
     const fecha = formatFechaHojaServicio(isoDate);
     const hora = hv('hs_hora');
-    const formacion = formacionSelect.value;
-    const nombresInterpretes = val('names');
+    const formacionName = formacionSelect.value;
     const coordNombre = val('coord_nombre');
     const coordGenero = val('coord_genero');
     const coordinacionEscenario = coordNombre
       ? `SI, ${coordGenero === 'o' ? 'coordinador' : 'coordinadora'}: ${coordNombre}`
       : 'sin coordinación';
     const proyeccionManos = document.getElementById('incluirManos').checked ? 'SI' : 'NO';
-    const descanso = miercoles ? 'SI' : 'NO';
-    const formatoLabel = getFormatoLabel(cycle);
-    const ensayoTecnico = buildScheduleParagraphs(state.lang || 'es')
-      .map(p => p.replace(/§§(.*?)§§/g, '$1'))
-      .join('\n');
 
-    hsHeaderRow('HOJA DE SERVICIO FUNDACIÓN JUAN MARCH');
-    hsFieldRow('FECHA', `${fecha}${hora ? ' ' + hora : ''}`);
-    hsFieldRow('DEPARTAMENTO', 'MÚSICA');
-    hsFieldRow('COORDINADOR DPTO', hv('hs_coordinador_dpto'));
-    hsFieldRow('FORMATO', formatoLabel);
-    hsFieldRow('CICLO', hv('hs_ciclo'));
-    hsFieldRow('ACTO', hv('hs_acto'));
-    hsFieldRow('LUGAR', 'Auditorio');
-    hsFieldRow('ENSAYO TÉCNICO', ensayoTecnico);
-    hsFieldRow('COORDINACIÓN ESCENARIO', coordinacionEscenario);
-
-    hsHeaderRow('INFORMACIÓN ACTO');
-    hsFieldRow('INTÉRPRETE/S', nombresInterpretes);
-    if(miercoles){
-      hsFieldRow('ENTREVISTA', hv('hs_entrevista'));
-      hsFieldRow('LUGAR ENTREVISTA', hv('hs_lugar_entrevista'));
+    // Pruebas técnicas: lo escrito en Datos comunes; en conciertos, si está vacío, el horario detallado del email
+    let pruebas = hv('pruebasTecnicas');
+    if(!pruebas && showConcierto){
+      pruebas = buildScheduleParagraphs('es').map(p => p.replace(/§§(.*?)§§/g, '$1')).join('\n');
     }
-    hsFieldRow('DISPOSICIÓN ESCENARIO', formacion);
-    hsLinkRow('PROGRAMA / ESCALETA', hv('hs_programa_link'), hv('hs_programa_link'), '');
-    hsFieldRow('DESCANSO', descanso, {dropdown:true});
 
-    hsHeaderRow('MATERIALES/PROYECCIONES');
-    if(miercoles){
-      hsFieldRow('ENTRADA DE PÚBLICO / DURANTE ENTREVISTA EN AUDITORIO', hv('hs_entrada_publico'));
-      hsFieldRow('DURANTE ENTREVISTA EN SALÓN AZUL', hv('hs_durante_entrevista_azul'));
-    } else {
-      hsFieldRow('ENTRADA DE PÚBLICO', hv('hs_entrada_publico'));
+    const cargo = hv('presentacionCargo');
+    const presentacionTexto = state.presentacion === 'si' ? (cargo ? `SI, a cargo de ${cargo}` : 'SI') : 'NO, sin presentación';
+    const prog = hv('hs_programa_link');
+    function hsProgramaRow(){
+      if(/^https?:\/\/\S+$/.test(prog)) hsLinkRow('PROGRAMA / ESCALETA', prog, prog, '');
+      else hsFieldRow('PROGRAMA / ESCALETA', prog);
     }
+    const ponenteLabel = isConf ? 'PONENTE' : (isPalma ? 'PONENTE / PARTICIPANTE' : 'PONENTE / PARTICIPANTES');
+
     const ROTULACION_LABELS = { rotulos: 'rotulación de obras', sobretitulos: 'sobretitulado' };
     const rotulacionTexto = state.rotulacion === 'ninguno'
       ? 'NO'
       : `SI, ${ROTULACION_LABELS[state.rotulacion]}${val('rotulacionDetalle') ? ' (' + val('rotulacionDetalle') + ')' : ''}`;
-    hsFieldRow('ROTULACIÓN Y SOBRETITULADO', `${rotulacionTexto}\nRótulos de inicio y fin desde la atem`);
-    hsFieldRow('PROYECCIÓN EN SALA ROTULACIÓN Y SOBRETITULADO', hv('hs_proyeccion_sala_rotulacion'));
-    hsFieldRow('OTRAS PROYECCIONES DURANTE EL ACTO', hv('hs_otras_proyecciones'));
-    hsFieldRow('PROYECCIÓN DE MANOS', proyeccionManos, {dropdown:true});
-    hsFieldRow('AVISOS', hv('hs_avisos'));
 
-    hsHeaderRow('VÍDEO');
-    hsFieldRow('CÁMARA EXTRA', hv('hs_camara_extra'), {dropdown:true});
-    hsFieldRow('MONTAJE', hv('hs_montaje_video'));
-    hsFieldRow('BACK UP', hv('hs_backup'));
+    // ----- Cabecera común a todos los actos -----
+    hsHeaderRow('HOJA DE SERVICIO FUNDACIÓN JUAN MARCH');
+    hsFieldRow('FECHA', `${fecha}${hora ? ' ' + hora : ''}`);
+    hsFieldRow('DEPARTAMENTO', hv('departamento'));
+    hsFieldRow('COORDINADOR DPTO', hv('hs_coordinador_dpto'));
+    hsFieldRow('FORMATO', getFormatoLabel(cycleSelect.value));
+    hsFieldRow('CICLO', hv('hs_ciclo'));
+    hsFieldRow('ACTO', hv('hs_acto'));
+    hsFieldRow('LUGAR', getLugar());
+    hsFieldRow(isPalma ? 'PRUEBAS TÉCNICAS' : 'ENSAYO TÉCNICO', pruebas);
+    hsFieldRow('COORDINACIÓN ESCENARIO', coordinacionEscenario);
 
-    hsHeaderRow('SONIDO');
-    if(miercoles) hsFieldRow('MICROFONÍA ENTREVISTA', hv('hs_microfonia_entrevista'));
-    hsFieldRow('LOCUTOR', hv('hs_locutor'));
-    hsFieldRow('RIDER / MICROFONÍA CONCIERTO', hv('hs_rider_microfonia'));
-    hsFieldRow('MONTAJE SONIDO', hv('hs_montaje_sonido'));
-    hsFieldRow('INTERVENCIONES HABLADAS', hv('hs_intervenciones_habladas'));
-    hsFieldRow('SUBIDA DE AUDIO', hv('hs_subida_audio'));
+    // ----- Información del acto -----
+    hsHeaderRow('INFORMACIÓN ACTO');
+    if(showConcierto) hsFieldRow('INTÉRPRETE/S', val('names'));
+    if(!isConcert) hsFieldRow(ponenteLabel, val('ponentes'));
+    if(miercoles){
+      hsFieldRow('ENTREVISTA', hv('hs_entrevista'));
+      hsFieldRow('LUGAR ENTREVISTA', hv('hs_lugar_entrevista'));
+    }
+    if(isConcert){
+      hsFieldRow('DISPOSICIÓN ESCENARIO', formacionName);
+      hsProgramaRow();
+      hsFieldRow('DESCANSO', miercoles ? 'SI' : 'NO', {dropdown:true});
+    } else if(isEsp){
+      hsFieldRow('FORMACIÓN INSTRUMENTAL', formacionName);
+      hsProgramaRow();
+      hsFieldRow('PRESENTACIÓN ACTO', presentacionTexto);
+      hsFieldRow('DISPOSICIÓN ESCENARIO', hv('disposicionEscenario'));
+      hsFieldRow('DESCANSO', 'NO', {dropdown:true});
+    } else if(isConf){
+      hsProgramaRow();
+      hsFieldRow('PRESENTACIÓN ACTO', presentacionTexto);
+      hsFieldRow('DISPOSICIÓN ESCENARIO', hv('disposicionEscenario'));
+    } else if(isBib){
+      hsProgramaRow();
+      hsFieldRow('DISPOSICIÓN ESCENARIO', hv('disposicionEscenario'));
+    } else if(isPalma){
+      hsProgramaRow();
+      hsFieldRow('DISPOSICIÓN ESCENARIO', getLugar());
+    }
 
-    hsHeaderRow('LUCES');
-    if(miercoles) hsFieldRow('INDICACIONES ILUMINACIÓN ENTREVISTA', HS_DEFAULTS.indicacionesIlumEntrevista);
-    hsFieldRow(miercoles ? 'INDICACIONES ILUMINACIÓN CONCIERTO' : 'ILUMINACIÓN CONCIERTO', hv('hs_iluminacion_concierto'));
-    hsFieldRow('PARTITURAS', hv('hs_partituras'));
-    hsFieldRow('LUZ SALA', hv('hs_luz_sala'));
+    if(isPalma){
+      // Palma: filas seguidas, sin más cabeceras de sección
+      hsFieldRow('PROYECCIONES', hv('hs_otras_proyecciones'));
+      hsFieldRow('INDICACIONES AUDIO', hv('hs_microfonia_conf'));
+      hsFieldRow('SUBIDA DE AUDIO', hv('hs_subida_audio'));
+      hsFieldRow('INDICACIONES ILUMINACIÓN', hv('hs_ilum_conf'));
+      hsFieldRow('OTRAS OBSERVACIONES', hv('hs_obs_otras'));
+      hsLinkRow('MATERIALES ENVIADOS', hv('hs_materiales_link'), 'Cartela inicio streaming', `Materiales en ${hv('hs_materiales_ruta')}`);
+      hsFieldRow('RUTA PRESERVACIÓN', hv('hs_ruta_preservacion'));
+      hsFieldRow('VÍDEOS REFERENCIA', hv('hs_videos_referencia'));
+    } else {
+      // ----- Materiales / proyecciones -----
+      hsHeaderRow('MATERIALES/PROYECCIONES');
+      if(miercoles){
+        hsFieldRow('ENTRADA DE PÚBLICO / DURANTE ENTREVISTA EN AUDITORIO', hv('hs_entrada_publico'));
+        hsFieldRow('DURANTE ENTREVISTA EN SALÓN AZUL', hv('hs_durante_entrevista_azul'));
+      } else {
+        hsFieldRow('ENTRADA DE PÚBLICO', hv('hs_entrada_publico'));
+      }
+      if(showConcierto){
+        hsFieldRow('ROTULACIÓN Y SOBRETITULADO', `${rotulacionTexto}\nRótulos de inicio y fin desde la atem`);
+        hsFieldRow('PROYECCIÓN EN SALA ROTULACIÓN Y SOBRETITULADO', hv('hs_proyeccion_sala_rotulacion'));
+      }
+      if(isConf || isEsp) hsFieldRow('PRESENTACIÓN', hv('hs_conf_presentacion'));
+      if(showConf) hsFieldRow('CONFERENCIA', hv('hs_conf_conferencia'));
+      if(showConcierto){
+        hsFieldRow('OTRAS PROYECCIONES DURANTE EL ACTO', hv('hs_otras_proyecciones'));
+        hsFieldRow('PROYECCIÓN DE MANOS', proyeccionManos, {dropdown:true});
+      }
+      if(showConf){
+        hsFieldRow('VÍDEOS', hv('hs_videos'));
+        hsFieldRow('AUDIOS', hv('hs_audios'));
+      }
+      hsFieldRow('AVISOS', hv('hs_avisos'));
 
-    hsHeaderRow('RETRANSMISIÓN');
-    hsFieldRow('SALÓN AZUL', hv('hs_salon_azul'), {dropdown:true});
-    hsFieldRow('CAFETERÍA', hv('hs_cafeteria'));
-    hsFieldRow('STREAMING', hv('hs_streaming'), {dropdown:true});
+      // ----- Vídeo -----
+      hsHeaderRow('VÍDEO');
+      if(showConcierto){
+        hsFieldRow('CÁMARA EXTRA', hv('hs_camara_extra'), {dropdown:true});
+        hsFieldRow('MONTAJE', hv('hs_montaje_video'));
+        hsFieldRow('BACK UP', hv('hs_backup'));
+      } else {
+        hsFieldRow('MONTAJE', hv('hs_montaje_video'));
+        hsFieldRow('CÁMARA EXTRA', hv('hs_camara_extra'), {dropdown:true});
+      }
 
-    hsHeaderRow('OTROS');
-    hsFieldRow('OBSERVACIONES PROGRAMA', hv('hs_obs_programa'));
-    hsFieldRow('OTRAS OBSERVACIONES', hv('hs_obs_otras'));
-    hsLinkRow('MATERIALES ENVIADOS', hv('hs_materiales_link'), 'Cartela inicio streaming', `Materiales en ${hv('hs_materiales_ruta')}`);
-    hsFieldRow('RUTA PRESERVACIÓN', hv('hs_ruta_preservacion'));
-    hsFieldRow('VÍDEOS REFERENCIA', hv('hs_videos_referencia'));
+      // ----- Sonido -----
+      hsHeaderRow('SONIDO');
+      if(miercoles) hsFieldRow('MICROFONÍA ENTREVISTA', hv('hs_microfonia_entrevista'));
+      if(showConcierto){
+        hsFieldRow('LOCUTOR', hv('hs_locutor'));
+        hsFieldRow('RIDER / MICROFONÍA CONCIERTO', hv('hs_rider_microfonia'));
+      }
+      if(showConf) hsFieldRow('MICROFONÍA', hv('hs_microfonia_conf'));
+      if(showConcierto){
+        hsFieldRow('MONTAJE SONIDO', hv('hs_montaje_sonido'));
+        hsFieldRow('INTERVENCIONES HABLADAS', hv('hs_intervenciones_habladas'));
+      }
+      hsFieldRow('SUBIDA DE AUDIO', hv('hs_subida_audio'));
+
+      // ----- Luces -----
+      hsHeaderRow('LUCES');
+      if(miercoles) hsFieldRow('INDICACIONES ILUMINACIÓN ENTREVISTA', HS_DEFAULTS.indicacionesIlumEntrevista);
+      if(showConcierto) hsFieldRow(miercoles ? 'INDICACIONES ILUMINACIÓN CONCIERTO' : 'ILUMINACIÓN CONCIERTO', hv('hs_iluminacion_concierto'));
+      if(showConf) hsFieldRow('INDICACIONES ILUMINACIÓN', hv('hs_ilum_conf'));
+      if(showConcierto) hsFieldRow('PARTITURAS', hv('hs_partituras'));
+      if(showConf) hsFieldRow('OTRAS INDICACIONES', hv('hs_otras_indicaciones_luces'));
+      hsFieldRow('LUZ SALA', hv('hs_luz_sala'));
+
+      // ----- Retransmisión -----
+      hsHeaderRow('RETRANSMISIÓN');
+      hsFieldRow('SALÓN AZUL', hv('hs_salon_azul'), {dropdown:true});
+      hsFieldRow('CAFETERÍA', hv('hs_cafeteria'));
+      hsFieldRow('STREAMING', hv('hs_streaming'), {dropdown:true});
+
+      // ----- Otros -----
+      hsHeaderRow('OTROS');
+      if(showConcierto) hsFieldRow('OBSERVACIONES PROGRAMA', hv('hs_obs_programa'));
+      hsFieldRow('OTRAS OBSERVACIONES', hv('hs_obs_otras'));
+      hsLinkRow('MATERIALES ENVIADOS', hv('hs_materiales_link'), 'Cartela inicio streaming', `Materiales en ${hv('hs_materiales_ruta')}`);
+      hsFieldRow('RUTA PRESERVACIÓN', hv('hs_ruta_preservacion'));
+      hsFieldRow('VÍDEOS REFERENCIA', hv('hs_videos_referencia'));
+    }
 
     const buffer = await wb.xlsx.writeBuffer();
     const blob = new Blob([buffer], {type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
     const url = URL.createObjectURL(blob);
-    const filename = buildHojaServicioFilename(isoDate, hora, miercoles);
     const a = document.createElement('a');
     a.href = url;
-    a.download = filename;
+    a.download = buildDocFilename('Hoja de Servicio', isoDate, hora, docTipoFile(false));
     document.body.appendChild(a);
     a.click();
     a.remove();
@@ -2287,13 +2846,19 @@ const HS_FIELD_IDS = [
   'hs_hora','hs_coordinador_dpto','hs_programa_link',
   'hs_entrevista','hs_lugar_entrevista','hs_microfonia_entrevista',
   'hs_entrada_publico','hs_durante_entrevista_azul',
-  'hs_proyeccion_sala_rotulacion','hs_otras_proyecciones','hs_avisos',
+  'hs_proyeccion_sala_rotulacion','hs_conf_presentacion','hs_conf_conferencia','hs_videos','hs_audios','hs_otras_proyecciones','hs_avisos',
   'hs_camara_extra','hs_montaje_video','hs_backup',
-  'hs_locutor','hs_rider_microfonia','hs_intervenciones_habladas','hs_montaje_sonido','hs_subida_audio',
-  'hs_iluminacion_concierto','hs_partituras','hs_luz_sala',
+  'hs_locutor','hs_rider_microfonia','hs_intervenciones_habladas','hs_microfonia_conf','hs_montaje_sonido','hs_subida_audio',
+  'hs_iluminacion_concierto','hs_ilum_conf','hs_otras_indicaciones_luces','hs_partituras','hs_luz_sala',
   'hs_salon_azul','hs_streaming','hs_cafeteria',
   'hs_obs_programa','hs_obs_otras','hs_videos_referencia','hs_materiales_link','hs_materiales_ruta','hs_ruta_preservacion'
 ];
+
+/* ---------- Inicio: tipo de acto por defecto (conciertos) ---------- */
+applyTipoVisibility();
+applyTipoDefaults();
+applyFormatoDefaults();
+renderHojaServicioFields();
 
 </script>
 </body>
