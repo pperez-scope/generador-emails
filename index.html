@@ -405,6 +405,22 @@
         </div>
       </div>
     </div>
+    <div class="row" id="interpNumField" style="display:none;">
+      <div class="field">
+        <label>Número de intérpretes (para el texto en tercera persona)</label>
+        <div class="seg" id="interpNumSeg">
+          <button type="button" data-val="multiple" class="active">Varios</button>
+          <button type="button" data-val="single">Uno</button>
+        </div>
+      </div>
+      <div class="field" id="interpGeneroField" style="display:none;">
+        <label>Género del/de la intérprete</label>
+        <div class="seg" id="interpGeneroSeg">
+          <button type="button" data-val="f" class="active">Femenino</button>
+          <button type="button" data-val="m">Masculino</button>
+        </div>
+      </div>
+    </div>
     <div class="checkline">
       <input type="checkbox" id="unclearLayout">
       <label for="unclearLayout" style="margin:0;">Aún no tengo clara la distribución en el escenario (se lo preguntaré a ellos primero)</label>
@@ -761,7 +777,7 @@ function saveFormaciones(obj){ localStorage.setItem(LS_FORMACIONES, JSON.stringi
 let formaciones = loadFormaciones();
 let lightingCurrentDataUrl = null;
 
-let state = { tipo:'conciertos', lang:'es', type:'interprete', single:false, genero:'f', rotulacion:'rotulos', presentacion:'no' };
+let state = { tipo:'conciertos', lang:'es', type:'interprete', single:false, genero:'f', interpSingle:false, interpGenero:'f', rotulacion:'rotulos', presentacion:'no' };
 
 /* ---------- TIPOS DE ACTO Y FORMATOS ---------- */
 const TIPOS = {
@@ -855,6 +871,20 @@ document.querySelectorAll('#typeSeg button').forEach(b=>{
     document.querySelectorAll('#typeSeg button').forEach(x=>x.classList.remove('active'));
     b.classList.add('active'); state.type = b.dataset.val;
     document.getElementById('repNamesField').style.display = (state.type === 'representante' || state.type === 'ambos') ? 'block' : 'none';
+    document.getElementById('interpNumField').style.display = (state.type === 'representante') ? 'flex' : 'none';
+  });
+});
+document.querySelectorAll('#interpNumSeg button').forEach(b=>{
+  b.addEventListener('click', ()=>{
+    document.querySelectorAll('#interpNumSeg button').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active'); state.interpSingle = b.dataset.val === 'single';
+    document.getElementById('interpGeneroField').style.display = state.interpSingle ? 'block' : 'none';
+  });
+});
+document.querySelectorAll('#interpGeneroSeg button').forEach(b=>{
+  b.addEventListener('click', ()=>{
+    document.querySelectorAll('#interpGeneroSeg button').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active'); state.interpGenero = b.dataset.val;
   });
 });
 document.querySelectorAll('#numSeg button').forEach(b=>{
@@ -1203,9 +1233,11 @@ const T = {
     introDirect: `Soy Patricia, del equipo técnico, encantada de saludaros.`,
     introDirectSingle: `Soy Patricia, del equipo técnico, encantada de saludarte.`,
     introThird: `Soy Patricia, del equipo técnico; es un placer saludarles.`,
+    introThirdSingle: `Soy Patricia, del equipo técnico; es un placer saludarle.`,
     introLineDirect: `Ya estamos preparando este concierto y para asegurarnos de que tenemos en cuenta todas vuestras necesidades técnicas me gustaría confirmar varios aspectos:`,
     introLineDirectSingle: `Ya estamos preparando este concierto y para asegurarnos de que tenemos en cuenta todas tus necesidades técnicas me gustaría confirmar varios aspectos:`,
     introLineThird: `Ya estamos preparando este concierto y para asegurarnos de que tenemos en cuenta todas las necesidades técnicas de los intérpretes, me gustaría confirmar varios aspectos:`,
+    introLineThirdSingle: (genero) => `Ya estamos preparando este concierto y para asegurarnos de que tenemos en cuenta todas las necesidades técnicas de${genero === 'm' ? 'l' : ' la'} intérprete, me gustaría confirmar varios aspectos:`,
     headingTest: 'Pruebas técnicas',
     headingSchedule: 'Recuerdo el plan de trabajo:',
     headingStage: 'Distribución del escenario',
@@ -1213,21 +1245,27 @@ const T = {
     furnitureDirect: `Por favor, ¿podéis concretarme las necesidades de mobiliario escénico: sillas, atriles o cualquier otro elemento que vayáis a utilizar, para poder tenerlo preparado a vuestra llegada? Si necesitáis atriles, ¿traéis partituras en papel o iPad? Esta información nos es útil para poder diseñar iluminación con antelación.`,
     furnitureDirectSingle: `Por favor, ¿podrías concretarme las necesidades de mobiliario escénico: sillas, atriles o cualquier otro elemento que vayas a utilizar, para poder tenerlo preparado a tu llegada? Si necesitas atriles, ¿traes partituras en papel o iPad? Esta información nos es útil para poder diseñar iluminación con antelación.`,
     furnitureThird: `¿Podríais indicarnos las necesidades de mobiliario escénico de los intérpretes: sillas, atriles u otros elementos que vayan a utilizar, para tenerlo preparado a su llegada? Si necesitan atriles, ¿utilizarán partituras en papel o iPad? Esta información nos resulta útil para diseñar la iluminación con antelación.`,
+    furnitureThirdSingle: (genero) => `¿Podría indicarnos las necesidades de mobiliario escénico de${genero === 'm' ? 'l' : ' la'} intérprete: sillas, atriles u otros elementos que vaya a utilizar, para tenerlo preparado a su llegada? Si necesita atriles, ¿utilizará partituras en papel o iPad? Esta información nos resulta útil para diseñar la iluminación con antelación.`,
     stageAttachDirect: f => `Adjunto un plano del escenario con la disposición habitual para ${f}. ¿Vuestra disposición será así o tenéis otra idea? También incluyo una imagen con la iluminación estándar que preparamos para este tipo de conciertos y que, salvo que se indique lo contrario, será la que utilizaremos durante el evento.`,
     stageAttachDirectSingle: f => `Adjunto un plano del escenario con la disposición habitual para ${f}. ¿Tu disposición será así o tienes otra idea? También incluyo una imagen con la iluminación estándar que preparamos para este tipo de conciertos y que, salvo que se indique lo contrario, será la que utilizaremos durante el evento.`,
     stageAttachThird: f => `Adjunto un plano del escenario con la disposición habitual para ${f}. ¿Será esta la distribución o tienen otra idea? También incluyo una imagen de la iluminación estándar que preparamos para este tipo de conciertos, que salvo indicación contraria será la que utilicemos durante el evento.`,
+    stageAttachThirdSingle: f => `Adjunto un plano del escenario con la disposición habitual para ${f}. ¿Será esta la distribución o tiene otra idea? También incluyo una imagen de la iluminación estándar que preparamos para este tipo de conciertos, que salvo indicación contraria será la que utilicemos durante el evento.`,
     stageAskDirect: `Para poder planificar la iluminación de la sala y la toma de sonido para la retransmisión, necesitamos conocer cuál será vuestra disposición en el escenario. ¿Podríais enviarme un plano, esquema o boceto de la distribución? Si tenéis diferentes posiciones o plantillas, enviadnos los dibujos de todas las opciones.`,
     stageAskDirectSingle: `Para poder planificar la iluminación de la sala y la toma de sonido para la retransmisión, necesitamos conocer cuál será tu disposición en el escenario. ¿Podrías enviarme un plano, esquema o boceto de la distribución? Si tienes diferentes posiciones o plantillas, envíame los dibujos de todas las opciones.`,
     stageAskThird: `Para poder planificar la iluminación de la sala y la toma de sonido para la retransmisión, necesitamos conocer cuál será su disposición en el escenario. ¿Podrían enviarnos un plano, esquema o boceto de la distribución? Si tienen diferentes posiciones o plantillas, envíennos los dibujos de todas las opciones.`,
+    stageAskThirdSingle: `Para poder planificar la iluminación de la sala y la toma de sonido para la retransmisión, necesitamos conocer cuál será su disposición en el escenario. ¿Podría enviarnos un plano, esquema o boceto de la distribución? Si tiene diferentes posiciones o plantillas, envíenos los dibujos de todas las opciones.`,
     movementsNoProgramDirect: `Es importante para nosotros conocer si abandonaréis el escenario entre obras, especialmente si hubiera obras de formación reducida. También si tenéis previsto ofrecer un bis y, en tal caso, cuál sería, para prevenir al personal de sala, técnicos y locutor del streaming.`,
     movementsNoProgramDirectSingle: `Es importante para nosotros conocer si abandonarás el escenario entre obras, especialmente si hubiera obras de formación reducida. También si tienes previsto ofrecer un bis y, en tal caso, cuál sería, para prevenir al personal de sala, técnicos y locutor del streaming.`,
     movementsNoProgramThird: `Es importante para nosotros saber si está previsto que abandonen el escenario en algún momento del programa y si tienen pensado interpretar un bis y, en tal caso, cuál sería, para poder informar a los técnicos, al personal de sala y al locutor de la retransmisión.`,
+    movementsNoProgramThirdSingle: `Es importante para nosotros saber si está previsto que abandone el escenario en algún momento del programa y si tiene pensado interpretar un bis y, en tal caso, cuál sería, para poder informar a los técnicos, al personal de sala y al locutor de la retransmisión.`,
     movementsProgramIntroDirect: `Es importante para nosotros conocer qué intérpretes participan en cada obra, así como vuestras entradas y salidas durante el programa, especialmente si alguno de vosotros no interviene en una obra concreta, para que el equipo técnico pueda retirar lo necesario del escenario si hace falta. Nos ayudaría mucho que indicarais quién interviene en cada obra:`,
     movementsProgramIntroDirectSingle: `Es importante para nosotros conocer qué intérpretes participan en cada obra, así como tus entradas y salidas durante el programa, especialmente si en algún momento no intervienes en una obra concreta, para que el equipo técnico pueda retirar lo necesario del escenario si hace falta. Nos ayudaría mucho que me indicaras quién interviene en cada obra:`,
     movementsProgramIntroThird: `Es importante para nosotros conocer qué intérpretes participan en cada obra, así como sus entradas y salidas durante el programa, especialmente si alguno de ellos no interviene en una obra concreta, para que el equipo técnico pueda retirar lo necesario del escenario si hace falta. Nos ayudaría mucho que nos indicaran quién interviene en cada obra:`,
+    movementsProgramIntroThirdSingle: (genero) => `Es importante para nosotros conocer en qué obras participa ${genero === 'm' ? 'el' : 'la'} intérprete, así como sus entradas y salidas durante el programa, especialmente si en algún momento no interviene en una obra concreta, para que el equipo técnico pueda retirar lo necesario del escenario si hace falta. Nos ayudaría mucho que nos indicara en qué obras participa:`,
     encoreAfterProgramDirect: `Además, indicadnos si tenéis previsto ofrecer un bis y, en tal caso, cuál sería, para prevenir al personal de sala, técnicos y locutor del streaming.`,
     encoreAfterProgramDirectSingle: `Además, indícame si tienes previsto ofrecer un bis y, en tal caso, cuál sería, para prevenir al personal de sala, técnicos y locutor del streaming.`,
     encoreAfterProgramThird: `Además, indíquennos si tienen previsto ofrecer un bis y, en tal caso, cuál sería, para prevenir al personal de sala, técnicos y locutor del streaming.`,
+    encoreAfterProgramThirdSingle: `Además, indíquenos si tiene previsto ofrecer un bis y, en tal caso, cuál sería, para prevenir al personal de sala, técnicos y locutor del streaming.`,
     closingDirect: `Quedo a vuestra disposición para lo que necesitéis en cuanto a iluminación, sonido o vídeo del evento.`,
     closingDirectSingle: `Quedo a tu disposición para lo que necesites en cuanto a iluminación, sonido o vídeo del evento.`,
     closingThird: `Quedo a su disposición para cualquier aspecto técnico relacionado con la iluminación, el sonido o el vídeo del evento.`,
@@ -1235,9 +1273,11 @@ const T = {
     testMiercolesDirect: (t) => `El día del concierto, las pruebas técnicas tendrán lugar a las ${t} junto con las pruebas de sonido de RNE. Al comienzo de las pruebas, el técnico os mostrará la iluminación preparada con el fin de confirmar si os resulta agradable y suficiente para la lectura de partituras y textos. Después necesitamos unos minutos de ensayo musical y lecturas para preparar la toma microfónica para grabación y retransmisión.`,
     testMiercolesDirectSingle: (t) => `El día del concierto, las pruebas técnicas tendrán lugar a las ${t} junto con las pruebas de sonido de RNE. Al comienzo de las pruebas, el técnico te mostrará la iluminación preparada con el fin de confirmar si te resulta agradable y suficiente para la lectura de partituras y textos. Después necesitamos unos minutos de ensayo musical y lecturas para preparar la toma microfónica para grabación y retransmisión.`,
     testMiercolesThird: (t) => `El día del concierto, las pruebas técnicas tendrán lugar a las ${t} junto con las pruebas de sonido de RNE. Al comienzo de las pruebas, el técnico mostrará a los intérpretes la iluminación preparada con el fin de confirmar si les resulta agradable y suficiente para la lectura de partituras y textos. Después necesitaremos unos minutos de ensayo musical y lecturas para preparar la toma microfónica para grabación y retransmisión.`,
+    testMiercolesThirdSingle: (t, genero) => `El día del concierto, las pruebas técnicas tendrán lugar a las ${t} junto con las pruebas de sonido de RNE. Al comienzo de las pruebas, el técnico mostrará a${genero === 'm' ? 'l' : ' la'} intérprete la iluminación preparada con el fin de confirmar si le resulta agradable y suficiente para la lectura de partituras y textos. Después necesitaremos unos minutos de ensayo musical y lecturas para preparar la toma microfónica para grabación y retransmisión.`,
     testSabadoDirect: (t, early) => `El día del concierto, la prueba técnica tendrá lugar habitualmente a las ${t}${early ? `, aunque si hay cambios en el reparto de intérpretes sería recomendable adelantarla a las ${early}` : ''}. Al comienzo de la prueba, el técnico os mostrará la iluminación preparada para confirmar que os resulta cómoda y que es suficiente para la lectura de partituras. Después necesitaremos unos minutos de ensayo musical para preparar la toma microfónica para grabación y retransmisión.`,
     testSabadoDirectSingle: (t, early) => `El día del concierto, la prueba técnica tendrá lugar habitualmente a las ${t}${early ? `, aunque si hay cambios en el reparto de intérpretes sería recomendable adelantarla a las ${early}` : ''}. Al comienzo de la prueba, el técnico te mostrará la iluminación preparada para confirmar que te resulta cómoda y que es suficiente para la lectura de partituras. Después necesitaremos unos minutos de ensayo musical para preparar la toma microfónica para grabación y retransmisión.`,
     testSabadoThird: (t, early) => `El día del concierto, la prueba técnica tendrá lugar habitualmente a las ${t}${early ? `, aunque si hay cambios en el reparto de intérpretes sería recomendable adelantarla a las ${early}` : ''}. Al comienzo de la prueba, el técnico mostrará a los intérpretes la iluminación preparada para confirmar que les resulta cómoda y suficiente para la lectura de partituras. Después necesitaremos unos minutos de ensayo musical para preparar la toma microfónica para grabación y retransmisión.`,
+    testSabadoThirdSingle: (t, early, genero) => `El día del concierto, la prueba técnica tendrá lugar habitualmente a las ${t}${early ? `, aunque si hay cambios en el reparto de intérpretes sería recomendable adelantarla a las ${early}` : ''}. Al comienzo de la prueba, el técnico mostrará a${genero === 'm' ? 'l' : ' la'} intérprete la iluminación preparada para confirmar que le resulta cómoda y suficiente para la lectura de partituras. Después necesitaremos unos minutos de ensayo musical para preparar la toma microfónica para grabación y retransmisión.`,
     testJovenes: (d1, t1, d2) => `Las pruebas técnicas tendrán lugar el ${d1}, día del primer concierto, a las ${t1}. El ${d2} no se realizarán pruebas técnicas. Al comienzo de las pruebas, el técnico os mostrará la iluminación preparada con el fin de confirmar si os encontráis cómodos con la misma y si es suficiente para la lectura de partituras. Después necesitamos unos minutos de ensayo musical para preparar la toma microfónica para grabación y retransmisión.`,
     testJovenesSingle: (d1, t1, d2, genero) => `Las pruebas técnicas tendrán lugar el ${d1}, día del primer concierto, a las ${t1}. El ${d2} no se realizarán pruebas técnicas. Al comienzo de las pruebas, el técnico te mostrará la iluminación preparada con el fin de confirmar si te encuentras ${genero === 'm' ? 'cómodo' : 'cómoda'} con la misma y si es suficiente para la lectura de partituras. Después necesitamos unos minutos de ensayo musical para preparar la toma microfónica para grabación y retransmisión.`,
     testJovenesThird: (d1, t1, d2) => `Las pruebas técnicas tendrán lugar el ${d1}, día del primer concierto, a las ${t1}. El ${d2} no se realizarán pruebas técnicas. Al comienzo de las pruebas, el técnico mostrará a los intérpretes la iluminación preparada con el fin de confirmar si resulta cómoda y suficiente para la lectura de partituras. Después necesitaremos unos minutos de ensayo musical para preparar la toma microfónica para grabación y retransmisión.`,
@@ -1381,10 +1421,30 @@ async function buildEmail(){
   const formacionName = formacionSelect.value;
   const timeVal = (id) => lang === 'en' ? to12h(val(id)) : val(id);
 
-  function pick(base){
+  // Cuando el destinatario es el/la representante (tercera persona), este indica si hay un único intérprete,
+  // para usar singular en vez de plural (y, cuando hace falta, el artículo el/la intérprete).
+  const interpSingle = !direct && state.interpSingle;
+  const interpGenero = state.interpGenero;
+
+  function pickText(base){
     if(direct){
       if(single && t[base + 'DirectSingle']) return t[base + 'DirectSingle'];
       return t[base + 'Direct'];
+    }
+    if(interpSingle && t[base + 'ThirdSingle'] !== undefined){
+      const v = t[base + 'ThirdSingle'];
+      return typeof v === 'function' ? v(interpGenero) : v;
+    }
+    return t[base + 'Third'];
+  }
+  function pickFn(base){
+    if(direct){
+      if(single && t[base + 'DirectSingle']) return t[base + 'DirectSingle'];
+      return t[base + 'Direct'];
+    }
+    if(interpSingle && t[base + 'ThirdSingle']){
+      const v = t[base + 'ThirdSingle'];
+      return (...args) => v(...args, interpGenero);
     }
     return t[base + 'Third'];
   }
@@ -1392,16 +1452,16 @@ async function buildEmail(){
   const paras = [];
 
   paras.push(buildGreeting(lang, state.single, genero, names));
-  paras.push(pick('intro'));
-  paras.push(pick('introLine'));
+  paras.push(pickText('intro'));
+  paras.push(pickText('introLine'));
 
   // --- Pruebas técnicas ---
   paras.push(`‡‡${t.headingTest}‡‡`);
   let testParagraph = '';
   if(cycle === 'miercoles'){
-    testParagraph = pick('testMiercoles')(timeVal('m_prueba_ini'));
+    testParagraph = pickFn('testMiercoles')(timeVal('m_prueba_ini'));
   } else if(cycle === 'sabado'){
-    testParagraph = pick('testSabado')(timeVal('s_prueba'), timeVal('s_prueba_adelantada'));
+    testParagraph = pickFn('testSabado')(timeVal('s_prueba'), timeVal('s_prueba_adelantada'));
   } else if(cycle === 'jovenes'){
     const fn = direct ? (single ? t.testJovenesSingle : t.testJovenes) : t.testJovenesThird;
     testParagraph = fn(val('j1_date'), timeVal('j1_prueba'), val('j2_date'), genero);
@@ -1420,11 +1480,11 @@ async function buildEmail(){
   const unclearLayout = document.getElementById('unclearLayout').checked;
   paras.push(`‡‡${t.headingStage}‡‡`);
   if(unclearLayout){
-    paras.push(pick('stageAsk'));
+    paras.push(pickText('stageAsk'));
   } else {
-    paras.push(pick('stageAttach')(formacionName.toLowerCase()));
+    paras.push(pickFn('stageAttach')(formacionName.toLowerCase()));
   }
-  paras.push(pick('furniture'));
+  paras.push(pickText('furniture'));
   if(document.getElementById('incluirManos').checked){
     paras.push(buildManosSentence(lang, direct, single, formacionName));
   }
@@ -1433,7 +1493,7 @@ async function buildEmail(){
   paras.push(`‡‡${t.headingMovements}‡‡`);
   const includeProgram = document.getElementById('includeProgram').checked;
   if(includeProgram){
-    paras.push(pick('movementsProgramIntro'));
+    paras.push(pickText('movementsProgramIntro'));
     const rows = Array.from(document.querySelectorAll('#programList .obra-meta')).map(r=>{
       const title = r.querySelector('.obra-title').value.trim();
       const performers = r.querySelector('.obra-performers').value.trim();
@@ -1441,9 +1501,9 @@ async function buildEmail(){
       return `- ${title}${performers ? ` — ${performers}` : ''}`;
     }).filter(Boolean);
     if(rows.length) paras.push(rows.join('\n'));
-    paras.push(pick('encoreAfterProgram'));
+    paras.push(pickText('encoreAfterProgram'));
   } else {
-    paras.push(pick('movementsNoProgram'));
+    paras.push(pickText('movementsNoProgram'));
   }
 
   // --- Notas extra ---
@@ -1458,7 +1518,7 @@ async function buildEmail(){
   }
 
   // --- Cierre ---
-  paras.push(pick('closing'));
+  paras.push(pickText('closing'));
   paras.push(t.signoff);
 
   return paras.join('\n\n');
@@ -1642,6 +1702,8 @@ function getFormSnapshot(){
     type: state.type,
     single: state.single,
     genero: state.genero,
+    interpSingle: state.interpSingle,
+    interpGenero: state.interpGenero,
     repNames: val('repNames'),
     unclearLayout: document.getElementById('unclearLayout').checked,
     m_prueba_ini: val('m_prueba_ini'),
@@ -1696,6 +1758,7 @@ function applyFormSnapshot(s){
   });
   state.type = s.type || 'interprete';
   document.getElementById('repNamesField').style.display = (state.type === 'representante' || state.type === 'ambos') ? 'block' : 'none';
+  document.getElementById('interpNumField').style.display = (state.type === 'representante') ? 'flex' : 'none';
   document.getElementById('repNames').value = s.repNames || '';
 
   // número de destinatarios y género
@@ -1708,6 +1771,17 @@ function applyFormSnapshot(s){
     b.classList.toggle('active', b.dataset.val === (s.genero || 'f'));
   });
   state.genero = s.genero || 'f';
+
+  // número de intérpretes y género (para el texto en tercera persona, solo representante)
+  document.querySelectorAll('#interpNumSeg button').forEach(b=>{
+    b.classList.toggle('active', b.dataset.val === (s.interpSingle ? 'single' : 'multiple'));
+  });
+  state.interpSingle = !!s.interpSingle;
+  document.getElementById('interpGeneroField').style.display = state.interpSingle ? 'block' : 'none';
+  document.querySelectorAll('#interpGeneroSeg button').forEach(b=>{
+    b.classList.toggle('active', b.dataset.val === (s.interpGenero || 'f'));
+  });
+  state.interpGenero = s.interpGenero || 'f';
 
   // rotulación / sobretitulado
   let rotulacionVal = s.rotulacion;
