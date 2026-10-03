@@ -277,14 +277,11 @@
         <input type="text" id="hs_acto" placeholder="Ej: El Quijote, castillos imaginarios">
       </div>
     </div>
-    <div class="field">
+    <div class="field" data-tipos="conferencias biblioteca palma">
       <label>Pruebas técnicas</label>
       <textarea id="pruebasTecnicas" rows="3" placeholder="Ej: 17:30 Prueba técnica con ponente"></textarea>
-      <div class="row" style="margin-top:6px;" data-tipos="conciertos especiales">
-        <button type="button" class="btn small ghost" id="copyPruebasBtn">↧ Copiar del horario detallado del email</button>
-      </div>
-      <div class="output-hint">En conciertos, si lo dejas vacío se usa el horario detallado del email.</div>
     </div>
+    <div class="output-hint" data-tipos="conciertos especiales">En conciertos y actos especiales, el ensayo técnico / plan de trabajo se toma de la tarjeta "Plan de trabajo" más abajo.</div>
     <div class="row">
       <div class="field">
         <label>Coordinador/a de escenario (opcional)</label>
@@ -335,6 +332,39 @@
       <input type="text" id="rotulacionLink" placeholder="https://www.dropbox.com/...">
       <div class="output-hint">Temporada 2026-2027 prerrellenado; para otra temporada, pega el nuevo enlace.</div>
     </div>
+    <div class="field" id="proyeccionEnSalaField">
+      <label>Proyección en sala</label>
+      <div class="seg" id="proyeccionEnSalaSeg">
+        <button type="button" data-val="si" class="active">SI</button>
+        <button type="button" data-val="no">NO</button>
+      </div>
+      <div class="output-hint">Si es SI, en la hoja de servicio se indicará que se proyecta en pantalla pequeña con proyector de sobretítulos. Los rótulos de inicio y fin del concierto nunca se proyectan en sala (va aparte, en la hoja de servicio).</div>
+    </div>
+  </section>
+
+  <section class="card" data-tipos="conciertos especiales">
+    <h2>Plan de trabajo<small>Horario detallado del día del concierto</small></h2>
+    <div style="color:var(--muted);font-size:0.8rem;margin-bottom:12px;">Pega el horario tal como te lo envíe el coordinador — se reformatea automáticamente a tu estilo. Revísalo antes de enviarlo. Añade un segundo día si el concierto lo requiere. Lo usan tanto el email como la hoja de servicio.</div>
+    <div id="dayBlocks"></div>
+    <button type="button" class="btn small" id="addDayBtn">+ Añadir día</button>
+  </section>
+
+  <section class="card" data-tipos="conciertos especiales">
+    <h2>Iluminación</h2>
+    <div class="field">
+      <label>Imagen de iluminación estándar</label>
+      <input type="file" id="ilumFoto" accept="image/*">
+      <div class="output-hint">Solo para esta sesión: no se guarda en el historial. Si recuperas un borrador antiguo, tendrás que volver a adjuntarla.</div>
+      <img id="ilumFotoPreview" style="display:none;max-width:220px;border-radius:8px;margin-top:8px;" alt="Vista previa de la iluminación">
+    </div>
+    <div class="checkline">
+      <input type="checkbox" id="ilumEstandar" checked>
+      <label for="ilumEstandar" style="margin:0;">Iluminación estándar</label>
+    </div>
+    <div class="field" id="ilumIndicacionesField" style="display:none;">
+      <label>Indicaciones específicas de iluminación</label>
+      <textarea id="ilumIndicaciones" rows="3" placeholder="Describe qué cambia respecto a la iluminación estándar"></textarea>
+    </div>
   </section>
 
   <section class="card" data-tipos="conferencias especiales biblioteca palma">
@@ -359,6 +389,35 @@
     <div class="field" data-tipos="conferencias especiales biblioteca">
       <label>Disposición del escenario</label>
       <input type="text" id="disposicionEscenario" placeholder="Ej: mesa con dos sillones y atril">
+    </div>
+  </section>
+
+  <section class="card" data-tipos="conciertos conferencias especiales biblioteca">
+    <h2>Retransmisión</h2>
+    <div class="row">
+      <div class="field">
+        <label>Streaming</label>
+        <select id="retransStreaming">
+          <option value="SI">SI</option>
+          <option value="NO">NO</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Salón azul</label>
+        <select id="retransSalonAzul">
+          <option value="SI">SI</option>
+          <option value="NO">NO</option>
+          <option value="POSIBLE">Posible</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Cafetería</label>
+        <select id="retransCafeteria">
+          <option value="SI">SI</option>
+          <option value="NO">NO</option>
+          <option value="POSIBLE">Posible</option>
+        </select>
+      </div>
     </div>
   </section>
 
@@ -429,14 +488,9 @@
 
   <!-- HORARIOS -->
   <section class="card">
-    <h2>Plan de trabajo<small id="scheduleHint"></small></h2>
+    <h2>Texto introductorio<small id="scheduleHint"></small></h2>
     <div id="scheduleFields"></div>
-    <div class="schedule-block" style="margin-top:18px;">
-      <label style="font-weight:600;color:var(--text);margin-bottom:4px;display:block;">Horario detallado</label>
-      <div style="color:var(--muted);font-size:0.8rem;margin-bottom:12px;">Pega el horario tal como te lo envíe el coordinador — se reformatea automáticamente a tu estilo. Revísalo antes de enviarlo. Añade un segundo día si el concierto lo requiere.</div>
-      <div id="dayBlocks"></div>
-      <button type="button" class="btn small" id="addDayBtn">+ Añadir día</button>
-    </div>
+    <div class="output-hint" style="margin-top:10px;">El horario detallado (plan de trabajo) se toma de "Datos comunes".</div>
   </section>
 
   <!-- PROGRAMA -->
@@ -574,11 +628,7 @@
       </div>
     </div>
     <div data-tipos="conciertos especiales">
-      <div class="output-hint" style="margin-top:-4px;margin-bottom:14px;">Rotulación y sobretitulado se toma de "Datos comunes".</div>
-      <div class="field">
-        <label>Proyección en sala — rotulación y sobretitulado</label>
-        <input type="text" id="hs_proyeccion_sala_rotulacion" placeholder="Ej: SI, en pantalla pequeña con proyector sobretítulos">
-      </div>
+      <div class="output-hint" style="margin-top:-4px;margin-bottom:14px;">Rotulación, sobretitulado y proyección en sala se toman de "Datos comunes".</div>
     </div>
     <div data-tipos="conferencias especiales">
       <div class="field">
@@ -645,10 +695,7 @@
   <section class="card">
     <h2>Luces</h2>
     <div data-tipos="conciertos especiales">
-      <div class="field">
-        <label id="lbl_ilum_concierto">Iluminación concierto</label>
-        <input type="text" id="hs_iluminacion_concierto">
-      </div>
+      <div class="output-hint" style="margin-bottom:10px;">La iluminación se toma de "Datos comunes".</div>
       <div class="field">
         <label>Partituras</label>
         <input type="text" id="hs_partituras">
@@ -665,18 +712,6 @@
     <div class="field" data-tipos="conciertos conferencias especiales biblioteca">
       <label>Luz sala</label>
       <textarea id="hs_luz_sala" rows="3"></textarea>
-    </div>
-  </section>
-
-  <section class="card" data-tipos="conciertos conferencias especiales biblioteca">
-    <h2>Retransmisión</h2>
-    <div class="row">
-      <div class="field"><label>Salón azul</label><input type="text" id="hs_salon_azul" placeholder="Ej: SI"></div>
-      <div class="field"><label>Streaming</label><input type="text" id="hs_streaming" placeholder="Ej: SI"></div>
-    </div>
-    <div class="field">
-      <label>Cafetería</label>
-      <textarea id="hs_cafeteria" rows="3"></textarea>
     </div>
   </section>
 
@@ -777,7 +812,7 @@ function saveFormaciones(obj){ localStorage.setItem(LS_FORMACIONES, JSON.stringi
 let formaciones = loadFormaciones();
 let lightingCurrentDataUrl = null;
 
-let state = { tipo:'conciertos', lang:'es', type:'interprete', single:false, genero:'f', interpSingle:false, interpGenero:'f', rotulacion:'rotulos', presentacion:'no' };
+let state = { tipo:'conciertos', lang:'es', type:'interprete', single:false, genero:'f', interpSingle:false, interpGenero:'f', rotulacion:'rotulos', proyeccionEnSala:'si', presentacion:'no' };
 
 /* ---------- TIPOS DE ACTO Y FORMATOS ---------- */
 const TIPOS = {
@@ -905,7 +940,25 @@ document.querySelectorAll('#rotulacionSeg button').forEach(b=>{
     document.querySelectorAll('#rotulacionSeg button').forEach(x=>x.classList.remove('active'));
     b.classList.add('active'); state.rotulacion = b.dataset.val;
     document.getElementById('rotulacionDetalleField').style.display = state.rotulacion === 'ninguno' ? 'none' : 'block';
+    document.getElementById('proyeccionEnSalaField').style.display = state.rotulacion === 'ninguno' ? 'none' : 'block';
   });
+});
+document.querySelectorAll('#proyeccionEnSalaSeg button').forEach(b=>{
+  b.addEventListener('click', ()=>{
+    document.querySelectorAll('#proyeccionEnSalaSeg button').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active'); state.proyeccionEnSala = b.dataset.val;
+  });
+});
+document.getElementById('ilumEstandar').addEventListener('change', function(){
+  document.getElementById('ilumIndicacionesField').style.display = this.checked ? 'none' : 'block';
+});
+document.getElementById('ilumFoto').addEventListener('change', function(){
+  const file = this.files && this.files[0];
+  const img = document.getElementById('ilumFotoPreview');
+  if(!file){ img.style.display = 'none'; img.src = ''; return; }
+  const reader = new FileReader();
+  reader.onload = (e) => { img.src = e.target.result; img.style.display = 'block'; };
+  reader.readAsDataURL(file);
 });
 
 document.querySelectorAll('#tipoSeg button').forEach(b=>{
@@ -1343,16 +1396,31 @@ function detectInstrumento(formacionName){
   return f.includes('clave') ? 'clave' : 'piano';
 }
 
-function buildManosSentence(lang, direct, single, formacionName){
+function buildManosSentence(lang, direct, single, readerSingle, formacionName){
   const instrumento = detectInstrumento(formacionName);
   if(lang === 'es'){
-    if(!direct) return `Aprovecho para informarles de que en los conciertos de ${instrumento} mostramos al público del auditorio las manos del intérprete proyectándolas en una pantalla. Hemos comprobado que esto mejora la experiencia para el público y no perturba en ningún momento la concentración de los intérpretes.`;
-    return single
+    // al representante también se le tutea/vosotrea, nunca de usted (igual que el resto del email)
+    const tuteo = direct ? single : readerSingle;
+    return tuteo
       ? `Aprovecho para informarte de que en los conciertos de ${instrumento} mostramos al público del auditorio las manos del intérprete proyectándolas en una pantalla. Hemos comprobado que esto mejora la experiencia para el público y no perturba en ningún momento la concentración de los intérpretes.`
       : `Aprovecho para informaros de que en los conciertos de ${instrumento} mostramos al público del auditorio las manos del intérprete proyectándolas en una pantalla. Hemos comprobado que esto mejora la experiencia para el público y no perturba en ningún momento la concentración de los intérpretes.`;
   }
   const instrumentoEn = instrumento === 'clave' ? 'harpsichord' : 'piano';
   return `I'd also like to mention that in ${instrumentoEn} concerts, we project the performer's hands onto a screen for the audience in the auditorium. We've found this adds to the audience's experience without ever affecting the performers' concentration.`;
+}
+
+// Pregunta si hay alguna indicación de iluminación que quieran compartir (independiente de si la imagen
+// adjunta es la estándar o no). Al representante, igual que el resto del email: tú/vosotros, nunca usted.
+function buildLightingAskSentence(lang, direct, readerSingle, interpSingle, interpGenero){
+  if(lang === 'es'){
+    const quienTiene = direct
+      ? (readerSingle ? 'tienes' : 'tenéis')
+      : (interpSingle ? `${interpGenero === 'm' ? 'el' : 'la'} intérprete tiene` : 'los intérpretes tienen');
+    const decir = readerSingle ? 'dínosla' : 'decídnosla';
+    return `Si ${quienTiene} alguna indicación concreta sobre la iluminación, ${decir} y la tendremos en cuenta.`;
+  }
+  if(direct) return `If you have any specific lighting preferences, just let us know and we'll take them into account.`;
+  return `If ${interpSingle ? 'the performer has' : 'the performers have'} any specific lighting preferences, just let us know and we'll take them into account.`;
 }
 
 const INSTRUMENT_WORDS = ['piano','violín','violin','viola','violonchelo','chelo','violoncello','cello','contrabajo','arpa','flauta','clarinete','oboe','fagot','trompa','trompeta','trombón','tuba','percusión','guitarra','clave','clavecín','clavicémbalo','órgano','soprano','mezzosoprano','mezzo-soprano','contralto','tenor','barítono','bajo','voz','director','directora'];
@@ -1491,9 +1559,10 @@ async function buildEmail(){
   } else {
     paras.push(pickFn('stageAttach')(formacionName.toLowerCase()));
   }
+  paras.push(buildLightingAskSentence(lang, direct, readerSingle, interpSingle, interpGenero));
   paras.push(pickText('furniture'));
   if(document.getElementById('incluirManos').checked){
-    paras.push(buildManosSentence(lang, direct, single, formacionName));
+    paras.push(buildManosSentence(lang, direct, single, readerSingle, formacionName));
   }
 
   // --- Programa / movimientos ---
@@ -1703,6 +1772,8 @@ function getFormSnapshot(){
     rotulacion: state.rotulacion,
     rotulacionDetalle: val('rotulacionDetalle'),
     rotulacionLink: val('rotulacionLink'),
+    proyeccionEnSala: state.proyeccionEnSala,
+    ilumEstandar: document.getElementById('ilumEstandar').checked,
 
     // --- email ---
     lang: state.lang,
@@ -1800,8 +1871,15 @@ function applyFormSnapshot(s){
   });
   state.rotulacion = rotulacionVal;
   document.getElementById('rotulacionDetalleField').style.display = rotulacionVal === 'ninguno' ? 'none' : 'block';
+  document.getElementById('proyeccionEnSalaField').style.display = rotulacionVal === 'ninguno' ? 'none' : 'block';
   document.getElementById('rotulacionDetalle').value = s.rotulacionDetalle || '';
   document.getElementById('rotulacionLink').value = (s.rotulacionLink !== undefined) ? s.rotulacionLink : defaultRotulacionLink();
+  state.proyeccionEnSala = s.proyeccionEnSala || 'si';
+  document.querySelectorAll('#proyeccionEnSalaSeg button').forEach(b=> b.classList.toggle('active', b.dataset.val === state.proyeccionEnSala));
+  document.getElementById('ilumEstandar').checked = (s.ilumEstandar !== undefined) ? !!s.ilumEstandar : true;
+  document.getElementById('ilumIndicacionesField').style.display = document.getElementById('ilumEstandar').checked ? 'none' : 'block';
+  document.getElementById('ilumFoto').value = '';
+  document.getElementById('ilumFotoPreview').style.display = 'none';
 
   // --- compartidos ---
   document.getElementById('esc_fecha').value = s.esc_fecha || '';
@@ -2244,13 +2322,33 @@ function escRichValue(raw){
   })) };
 }
 
-function escAddObraBlock(ws, texto, formacion, locucionLabel){
-  const videoCue = state.rotulacion === 'rotulos' ? 'Proyección rótulos'
-    : state.rotulacion === 'sobretitulos' ? 'Proyección sobretítulos'
-    : '';
-  escAddRow(ws, [ '', '', escRichValue(texto), formacion || '', videoCue, '', '', ''], ESC_COLOR.pink);
+// Retransmisión (Streaming / Salón azul / Cafetería): se toma de "Datos comunes" y se traduce
+// a lo que aparece en la columna ENVÍO A de la escaleta. Palma no tiene estos campos.
+function resolveEnvio(){
+  if(state.tipo === 'palma') return { streaming:'', salon:'', cafe:'Cafetería' };
+  const streaming = val('retransStreaming') === 'SI' ? 'Streaming' : '';
+  const salonRaw = val('retransSalonAzul');
+  const salon = salonRaw === 'SI' ? 'Salón azul' : salonRaw === 'POSIBLE' ? 'Salón azul (posible)' : '';
+  const cafeRaw = val('retransCafeteria');
+  const cafe = cafeRaw === 'SI' ? 'Cafetería' : cafeRaw === 'POSIBLE' ? 'Cafetería (posible)' : '';
+  return { streaming, salon, cafe };
+}
+function envioJoin(envio, opts){
+  opts = opts || {};
+  const parts = [...(opts.siempre || [])];
+  if(opts.streaming && envio.streaming) parts.push(envio.streaming);
+  if(opts.salon && envio.salon) parts.push(envio.salon);
+  if(opts.cafe && envio.cafe) parts.push(envio.cafe);
+  return parts.join(opts.sep || ' + ');
+}
+
+function escAddObraBlock(ws, texto, formacion, locucionLabel, envio, ilumCue, proyeccionSala){
+  let videoCue = '';
+  if(state.rotulacion === 'rotulos') videoCue = `Proyección rótulos (${proyeccionSala ? '' : 'no '}proyectado en sala)`;
+  else if(state.rotulacion === 'sobretitulos') videoCue = `Proyección sobretítulos (${proyeccionSala ? '' : 'no '}proyectado en sala)`;
+  escAddRow(ws, [ '', '', escRichValue(texto), formacion || '', videoCue, '', ilumCue || '', ''], ESC_COLOR.pink);
   escAddRow(ws, ['', '', 'Aplausos', '', '', '', 'Glorias', ''], ESC_COLOR.none);
-  escAddRow(ws, ['', '', locucionLabel, '', '', '', '', 'Streaming + salón azul'], ESC_COLOR.blue);
+  escAddRow(ws, ['', '', locucionLabel, '', '', '', '', envioJoin(envio, {streaming:true, salon:true})], ESC_COLOR.blue);
 }
 
 function shiftTime(hhmm, deltaMin){
@@ -2266,7 +2364,7 @@ function escAddBloqueBlock(ws, texto, movimiento){
   escAddRow(ws, ['', '', 'Aplausos', '', '', '', 'Glorias', ''], ESC_COLOR.none);
 }
 
-function escBuildPreBlockActo(ws){
+function escBuildPreBlockActo(ws, envio){
   const hora = escVal('hs_hora');
   const auto = (id, delta) => escVal(id) || (hora ? shiftTime(hora, delta) : '');
   const tPuertas = auto('esc_t_puertas', -30);
@@ -2275,7 +2373,7 @@ function escBuildPreBlockActo(ws){
   const tInicio = escVal('esc_t_inicio') || hora;
   const esp = state.tipo === 'especiales';
   escAddRow(ws, [tPuertas, '', 'Apertura puertas\nEntrada público', '', 'Imagen acto para entrada de público', 'Hilo musical', 'protocolo luces entrada público', ''], ESC_COLOR.yellow);
-  escAddRow(ws, [tDing, '', 'Ding dong en cafetería\n(coordinado con mantenimiento)', '', '', '', '', 'cafetería'], ESC_COLOR.gold);
+  escAddRow(ws, [tDing, '', 'Ding dong en cafetería\n(coordinado con mantenimiento)', '', '', '', '', envioJoin(envio, {cafe:true})], ESC_COLOR.gold);
   escAddRow(ws, ['', '', 'Fin hilo musical', '', '', 'Quitar hilo musical', '', ''], ESC_COLOR.none);
   escAddRow(ws, [tAviso, '', 'Aviso de móviles', '', '', 'Coordinado con mantenimiento', '', ''], ESC_COLOR.yellow);
   escAddRow(ws, [tInicio, '', esp ? 'Entrada participantes' : 'Entrada ponente/s', '', '', '', 'protocolo luces inicio acto', ''], ESC_COLOR.none);
@@ -2294,47 +2392,48 @@ function escBuildFinalBlockActo(ws){
   }
 }
 
-function escBuildPreBlockMiercoles(ws){
-  escAddRow(ws, [escVal('esc_t_carta'), '', 'Carta de ajuste', '', 'Desde Qlab', 'Desde iMac', '', 'Streaming + salón azul'], ESC_COLOR.blue);
-  escAddRow(ws, [escVal('esc_t_cartela'), '', 'Cartela inicio acto', '', 'Desde atem', '', '', 'Streaming + salón azul'], ESC_COLOR.blue);
+function escBuildPreBlockMiercoles(ws, envio){
+  escAddRow(ws, [escVal('esc_t_carta'), '', 'Carta de ajuste', '', 'Desde Qlab', 'Desde iMac', '', envioJoin(envio, {streaming:true, salon:true})], ESC_COLOR.blue);
+  escAddRow(ws, [escVal('esc_t_cartela'), '', 'Cartela inicio acto', '', 'Desde atem', '', '', envioJoin(envio, {streaming:true, salon:true})], ESC_COLOR.blue);
   escAddRow(ws, [escVal('esc_t_puertas'), '', 'Apertura puertas\nEntrada público', '', '', '', 'protocolo luces entrada público', ''], ESC_COLOR.yellow);
-  escAddRow(ws, [escVal('esc_t_puertas'), escVal('esc_duracion_entrevista'), 'Entrevista radio en salón azul', '', '', 'audio entrevista en auditorio', '', 'Streaming + salón azul'], ESC_COLOR.pink);
-  escAddRow(ws, [escVal('esc_t_dingdong'), '', 'Ding dong en cafetería', '', '', 'Quitar hilo musical de cafetería para mandar señal del auditorio', '', 'cafetería'], ESC_COLOR.gold);
+  escAddRow(ws, [escVal('esc_t_puertas'), escVal('esc_duracion_entrevista'), 'Entrevista radio en salón azul', '', '', 'audio entrevista en auditorio', '', envioJoin(envio, {streaming:true, salon:true})], ESC_COLOR.pink);
+  escAddRow(ws, [escVal('esc_t_dingdong'), '', 'Ding dong en cafetería', '', '', 'Quitar hilo musical de cafetería para mandar señal del auditorio', '', envioJoin(envio, {cafe:true})], ESC_COLOR.gold);
   escAddRow(ws, ['', '', 'Fin entrevista', 'Recogida set entrevista salón azul', '', '', '', ''], ESC_COLOR.none);
-  escAddRow(ws, ['', '', 'PG auditorio', '', 'Rótulo "en breves momentos..."', '', '', 'Streaming + salón azul'], ESC_COLOR.blue);
-  escAddRow(ws, [escVal('esc_t_locutor'), '', 'Inicio locutor RNE', '', 'Rótulo locutor RNE (no se proyecta en sala)', '', '', 'Streaming + salón azul'], ESC_COLOR.blue);
-  escAddRow(ws, [escVal('esc_t_aviso'), '', 'Aviso de móviles', '', '', 'Tras aviso desde hall coordinado con regiduría', '', 'Auditorio + salón azul'], ESC_COLOR.yellow);
+  escAddRow(ws, ['', '', 'PG auditorio', '', 'Rótulo "en breves momentos..."', '', '', envioJoin(envio, {streaming:true, salon:true})], ESC_COLOR.blue);
+  escAddRow(ws, [escVal('esc_t_locutor'), '', 'Inicio locutor RNE', '', 'Rótulo locutor RNE (no se proyecta en sala)', '', '', envioJoin(envio, {streaming:true, salon:true})], ESC_COLOR.blue);
+  escAddRow(ws, [escVal('esc_t_aviso'), '', 'Aviso de móviles', '', '', 'Tras aviso desde hall coordinado con regiduría', '', envioJoin(envio, {siempre:['Auditorio'], salon:true})], ESC_COLOR.yellow);
   escAddRow(ws, ['', '', 'Entrada intérprete/s', '', 'Rótulos inicio (no se proyectan en sala)', '', 'protocolo luces inicio concierto', ''], ESC_COLOR.none);
 }
 
-function escBuildPreBlockManana(ws){
+function escBuildPreBlockManana(ws, envio){
   escAddRow(ws, [escVal('esc_t_puertas'), '', 'Apertura puertas\nEntrada público', '', '', '', 'protocolo luces entrada público', ''], ESC_COLOR.yellow);
-  escAddRow(ws, ['', '', 'Carta de ajuste', '', 'Desde Qlab', 'Desde iMac', '', 'Streaming + salón azul'], ESC_COLOR.blue);
-  escAddRow(ws, [escVal('esc_t_cartela'), '', 'Cartela inicio acto', '', '', '', 'protocolo luces entrada público', 'Streaming + salón azul'], ESC_COLOR.blue);
-  escAddRow(ws, [escVal('esc_t_dingdong'), '', 'Ding dong en cafetería', '', '', 'Quitar hilo musical de cafetería para mandar señal del auditorio', '', 'cafetería'], ESC_COLOR.gold);
-  escAddRow(ws, [escVal('esc_t_locutor'), '', 'Inicio locutor/a', '', 'Rótulo locutor/a (no se proyecta)', '', '', 'Streaming + salón azul'], ESC_COLOR.blue);
-  escAddRow(ws, [escVal('esc_t_aviso'), '', 'Aviso de móviles', '', '', 'Tras aviso desde hall coordinado con regiduría', '', 'Auditorio + salón azul'], ESC_COLOR.yellow);
+  escAddRow(ws, ['', '', 'Carta de ajuste', '', 'Desde Qlab', 'Desde iMac', '', envioJoin(envio, {streaming:true, salon:true})], ESC_COLOR.blue);
+  escAddRow(ws, [escVal('esc_t_cartela'), '', 'Cartela inicio acto', '', '', '', 'protocolo luces entrada público', envioJoin(envio, {streaming:true, salon:true})], ESC_COLOR.blue);
+  escAddRow(ws, [escVal('esc_t_dingdong'), '', 'Ding dong en cafetería', '', '', 'Quitar hilo musical de cafetería para mandar señal del auditorio', '', envioJoin(envio, {cafe:true})], ESC_COLOR.gold);
+  escAddRow(ws, [escVal('esc_t_locutor'), '', 'Inicio locutor/a', '', 'Rótulo locutor/a (no se proyecta)', '', '', envioJoin(envio, {streaming:true, salon:true})], ESC_COLOR.blue);
+  escAddRow(ws, [escVal('esc_t_aviso'), '', 'Aviso de móviles', '', '', 'Tras aviso desde hall coordinado con regiduría', '', envioJoin(envio, {siempre:['Auditorio'], salon:true})], ESC_COLOR.yellow);
   escAddRow(ws, ['', '', 'Entrada intérpretes', '', 'Rótulos inicio concierto (no se proyectan en sala)', '', 'protocolo luces inicio concierto', ''], ESC_COLOR.none);
 }
 
-function escBuildDescanso(ws, duracion){
+function escBuildDescanso(ws, duracion, envio){
+  const dingdongDest = ['Hall', envio.salon, envio.cafe, 'Auditorio'].filter(Boolean).join(' / ');
   escAddRow(ws, ['', '', 'Salida intérpretes', '', '', '', 'Glorias', ''], ESC_COLOR.none);
   escAddRow(ws, ['', duracion || '', 'Descanso', '', '', '', 'Protocolo luz descanso', ''], ESC_COLOR.yellow);
-  escAddRow(ws, ['', '', 'Locución RNE\n+ minutos musicales', '', '', 'Durante los minutos musicales, meter sonido ambiente de sala', '', 'Streaming + salón azul'], ESC_COLOR.blue);
-  escAddRow(ws, ['', '', 'Din don 5 min antes de comienzo 2ª parte', '', '', 'Aviso desde regiduría', '', 'Hall / salón azul / cafetería / auditorio'], ESC_COLOR.yellow);
-  escAddRow(ws, ['', '', 'Din don 3 min antes de comienzo 2ª parte', '', '', 'Aviso desde regiduría', 'Quitar laterales sala', 'Hall / salón azul / cafetería / auditorio'], ESC_COLOR.yellow);
-  escAddRow(ws, ['', '', 'Din don 1 min antes de comienzo 2ª parte', '', '', 'Aviso desde regiduría', 'Quitar central sala', 'Hall / salón azul / cafetería / auditorio'], ESC_COLOR.yellow);
+  escAddRow(ws, ['', '', 'Locución RNE\n+ minutos musicales', '', '', 'Durante los minutos musicales, meter sonido ambiente de sala', '', envioJoin(envio, {streaming:true, salon:true})], ESC_COLOR.blue);
+  escAddRow(ws, ['', '', 'Din don 5 min antes de comienzo 2ª parte', '', '', 'Aviso desde regiduría', '', dingdongDest], ESC_COLOR.yellow);
+  escAddRow(ws, ['', '', 'Din don 3 min antes de comienzo 2ª parte', '', '', 'Aviso desde regiduría', 'Quitar laterales sala', dingdongDest], ESC_COLOR.yellow);
+  escAddRow(ws, ['', '', 'Din don 1 min antes de comienzo 2ª parte', '', '', 'Aviso desde regiduría', 'Quitar central sala', dingdongDest], ESC_COLOR.yellow);
   escAddRow(ws, ['', '', 'Locución RNE', '', '', '', '', ''], ESC_COLOR.blue);
   escAddRow(ws, ['', '', 'Entrada intérpretes', '', '', '', 'Glorias', ''], ESC_COLOR.none);
 }
 
-function escBuildFinalBlock(ws, locucionLabel){
+function escBuildFinalBlock(ws, locucionLabel, envio){
   const bis = escVal('esc_bis');
   const fotos = escVal('esc_fotos');
   escAddRow(ws, ['', '', 'Salida intérpretes\nEntrada intérpretes para propina', '', '', '', 'Glorias', ''], ESC_COLOR.none);
   escAddRow(ws, ['', '', bis ? `Bis: ${bis}` : 'Bis', '', '', '', '', ''], ESC_COLOR.pink, 3);
   escAddRow(ws, ['', '', 'Aplausos\nSalida intérprete/s', '', '', '', 'Glorias', ''], ESC_COLOR.none);
-  escAddRow(ws, ['', '', locucionLabel, '', '', '', '', 'Streaming + salón azul'], ESC_COLOR.blue);
+  escAddRow(ws, ['', '', locucionLabel, '', '', '', '', envioJoin(envio, {streaming:true, salon:true})], ESC_COLOR.blue);
   escAddRow(ws, ['', '', 'FIN EVENTO', '', '', '', 'protocolo luces salida público', ''], ESC_COLOR.yellow);
   if(fotos){
     escAddRow(ws, ['', '', fotos, '', '', '', '', ''], ESC_COLOR.none);
@@ -2363,6 +2462,11 @@ document.getElementById('generateEscaletaBtn').addEventListener('click', async (
     const showConcierto = (tipo === 'conciertos' || tipo === 'especiales');
     const miercoles = escIsMiercoles();
     const locucionLabel = miercoles ? 'Locución RNE' : 'Locución';
+    const envio = resolveEnvio();
+    const ilumEstandarEl = document.getElementById('ilumEstandar');
+    const ilumEstandarChecked = ilumEstandarEl ? ilumEstandarEl.checked : true;
+    const ilumCue = showConcierto ? (ilumEstandarChecked ? 'Iluminación estándar' : (val('ilumIndicaciones') || 'Iluminación estándar')) : '';
+    const proyeccionSala = state.proyeccionEnSala === 'si';
 
     const fechaTexto = formatFechaLarga(escVal('esc_fecha')) || escVal('esc_fecha');
     const cicloLineas = [getFormatoLabel(cycleSelect.value), escVal('hs_ciclo'), escVal('hs_acto')].filter(Boolean);
@@ -2382,26 +2486,26 @@ document.getElementById('generateEscaletaBtn').addEventListener('click', async (
     for(let c=1;c<=8;c++){ headerRow.getCell(c).font = {name:'Arial', size:10, bold:true}; headerRow.getCell(c).alignment = {vertical:'middle', horizontal:'center', wrapText:true}; }
 
     if(tipo === 'conciertos'){
-      if(miercoles){ escBuildPreBlockMiercoles(ws); } else { escBuildPreBlockManana(ws); }
+      if(miercoles){ escBuildPreBlockMiercoles(ws, envio); } else { escBuildPreBlockManana(ws, envio); }
     } else {
-      escBuildPreBlockActo(ws);
+      escBuildPreBlockActo(ws, envio);
     }
 
     const items = Array.from(document.querySelectorAll('#escaletaObras > .esc-item'));
     items.forEach(item=>{
       if(item.classList.contains('esc-descanso')){
         const duracion = item.querySelector('.esc-descanso-duracion').value.trim();
-        escBuildDescanso(ws, duracion);
+        escBuildDescanso(ws, duracion, envio);
       } else {
         const texto = item.querySelector('.esc-obra-texto').value.trim();
         if(!texto) return;
         const formacion = item.querySelector('.esc-obra-formacion').value.trim();
         if(item.classList.contains('esc-bloque')) escAddBloqueBlock(ws, texto, formacion);
-        else escAddObraBlock(ws, texto, formacion, locucionLabel);
+        else escAddObraBlock(ws, texto, formacion, locucionLabel, envio, ilumCue, proyeccionSala);
       }
     });
 
-    if(showConcierto){ escBuildFinalBlock(ws, locucionLabel); } else { escBuildFinalBlockActo(ws); }
+    if(showConcierto){ escBuildFinalBlock(ws, locucionLabel, envio); } else { escBuildFinalBlockActo(ws); }
 
     const buffer = await wb.xlsx.writeBuffer();
     const blob = new Blob([buffer], {type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
@@ -2529,7 +2633,6 @@ function renderHojaServicioFields(){
   lbl('lbl_entrada_publico', m ? 'Entrada de público / durante entrevista en auditorio' : 'Entrada de público');
   lbl('lbl_microfonia_conf', palma ? 'Indicaciones audio' : 'Microfonía');
   lbl('lbl_otras_proy', palma ? 'Proyecciones' : 'Otras proyecciones durante el acto');
-  lbl('lbl_ilum_concierto', m ? 'Indicaciones iluminación concierto' : 'Iluminación concierto');
 }
 cycleSelect.addEventListener('change', renderHojaServicioFields);
 renderHojaServicioFields();
@@ -2543,8 +2646,8 @@ function applyFormatoDefaults(){
     const m = (f === 'miercoles');
     forceSet('hs_locutor', m ? HS_DEFAULTS.locutorMiercoles : HS_DEFAULTS.locutorOtros);
     forceSet('hs_montaje_sonido', m ? HS_DEFAULTS.montajeSonidoMiercoles : '');
-    forceSet('hs_salon_azul', m ? 'SI' : '');
-    forceSet('hs_streaming', m ? 'SI' : '');
+    forceSet('retransSalonAzul', m ? 'SI' : 'NO');
+    forceSet('retransStreaming', m ? 'SI' : 'NO');
     forceSet('hs_entrada_publico', m ? HS_DEFAULTS.entradaPublicoMiercoles : HS_DEFAULTS.entradaPublicoOtros);
     forceSet('hs_durante_entrevista_azul', m ? HS_DEFAULTS.duranteEntrevistaAzul : '');
     if(m) forceSet('hs_lugar_entrevista', 'SALÓN AZUL');
@@ -2593,14 +2696,14 @@ function applyTipoDefaults(){
   ['hs_conf_presentacion','hs_conf_conferencia','hs_videos','hs_audios','hs_otras_indicaciones_luces'].forEach(id => forceSet(id, ''));
   forceSet('hs_obs_otras', isPalma ? pal.obs : '');
   forceSet('hs_materiales_link', isPalma ? '' : HS_DEFAULTS.materialesLink);
-  forceSet('hs_salon_azul', isConf ? 'SI' : '');
-  forceSet('hs_streaming', isConf ? 'SI' : '');
+  forceSet('retransSalonAzul', isConf ? 'SI' : 'NO');
+  forceSet('retransStreaming', isConf ? 'SI' : 'NO');
+  forceSet('retransCafeteria', 'SI');
   forceSet('hs_locutor', '');
   forceSet('hs_montaje_sonido', '');
 
   fillIfEmpty('rotulacionLink', defaultRotulacionLink());
   fillIfEmpty('hs_luz_sala', HS_DEFAULTS.luzSala);
-  fillIfEmpty('hs_cafeteria', HS_DEFAULTS.cafeteria);
   fillIfEmpty('hs_ruta_preservacion', HS_DEFAULTS.rutaPreservacion);
   fillIfEmpty('hs_materiales_ruta', `INFORTREND/actos/capturas/${computeTemporadaDefault()}/1T`);
 }
@@ -2646,11 +2749,6 @@ function setTipo(tipo, applyDefaults){
   renderEscaletaPreBlock();
   renderHojaServicioFields();
 }
-
-document.getElementById('copyPruebasBtn').addEventListener('click', ()=>{
-  const texto = buildScheduleParagraphs('es').map(p => p.replace(/§§(.*?)§§/g, '$1')).join('\n');
-  forceSet('pruebasTecnicas', texto);
-});
 
 /* ---------- Utilidades de fecha / nombre de archivo ---------- */
 const HS_MESES_LARGOS = ['ene','feb','mar','abr','may','jun','jul','ago','sept','oct','nov','dic'];
@@ -2780,11 +2878,10 @@ document.getElementById('generateHojaServicioBtn').addEventListener('click', asy
       : 'sin coordinación';
     const proyeccionManos = document.getElementById('incluirManos').checked ? 'SI' : 'NO';
 
-    // Pruebas técnicas: lo escrito en Datos comunes; en conciertos, si está vacío, el horario detallado del email
-    let pruebas = hv('pruebasTecnicas');
-    if(!pruebas && showConcierto){
-      pruebas = buildScheduleParagraphs('es').map(p => p.replace(/§§(.*?)§§/g, '$1')).join('\n');
-    }
+    // Plan de trabajo (conciertos/especiales, desde "Datos comunes") o pruebas técnicas manuales (resto de tipos)
+    const pruebas = showConcierto
+      ? buildScheduleParagraphs('es').map(p => p.replace(/§§(.*?)§§/g, '$1')).join('\n')
+      : hv('pruebasTecnicas');
 
     const cargo = hv('presentacionCargo');
     const presentacionTexto = state.presentacion === 'si' ? (cargo ? `SI, a cargo de ${cargo}` : 'SI') : 'NO, sin presentación';
@@ -2799,6 +2896,13 @@ document.getElementById('generateHojaServicioBtn').addEventListener('click', asy
     const rotulacionTexto = state.rotulacion === 'ninguno'
       ? 'NO'
       : `SI, ${ROTULACION_LABELS[state.rotulacion]}${val('rotulacionDetalle') ? ' (' + val('rotulacionDetalle') + ')' : ''}`;
+    const proyeccionSalaTexto = state.rotulacion === 'ninguno'
+      ? 'NO'
+      : (state.proyeccionEnSala === 'si' ? 'SI, en pantalla pequeña con proyector de sobretítulos' : 'NO');
+    const ilumEstandarEl = document.getElementById('ilumEstandar');
+    const ilumTexto = (ilumEstandarEl ? ilumEstandarEl.checked : true)
+      ? 'SI, iluminación estándar'
+      : (hv('ilumIndicaciones') || 'Indicaciones específicas (ver detalle)');
 
     // ----- Cabecera común a todos los actos -----
     hsHeaderRow('HOJA DE SERVICIO FUNDACIÓN JUAN MARCH');
@@ -2809,7 +2913,7 @@ document.getElementById('generateHojaServicioBtn').addEventListener('click', asy
     hsFieldRow('CICLO', hv('hs_ciclo'));
     hsFieldRow('ACTO', hv('hs_acto'));
     hsFieldRow('LUGAR', getLugar());
-    hsFieldRow(isPalma ? 'PRUEBAS TÉCNICAS' : 'ENSAYO TÉCNICO', pruebas);
+    hsFieldRow(isPalma ? 'PRUEBAS TÉCNICAS' : (showConcierto ? 'PLAN DE TRABAJO' : 'ENSAYO TÉCNICO'), pruebas);
     hsFieldRow('COORDINACIÓN ESCENARIO', coordinacionEscenario);
 
     // ----- Información del acto -----
@@ -2863,7 +2967,7 @@ document.getElementById('generateHojaServicioBtn').addEventListener('click', asy
       }
       if(showConcierto){
         hsFieldRow('ROTULACIÓN Y SOBRETITULADO', `${rotulacionTexto}\nRótulos de inicio y fin desde la atem`, { linkUrl: state.rotulacion !== 'ninguno' ? hv('rotulacionLink') : '' });
-        hsFieldRow('PROYECCIÓN EN SALA ROTULACIÓN Y SOBRETITULADO', hv('hs_proyeccion_sala_rotulacion'));
+        hsFieldRow('PROYECCIÓN EN SALA ROTULACIÓN Y SOBRETITULADO', proyeccionSalaTexto);
       }
       if(isConf || isEsp) hsFieldRow('PRESENTACIÓN', hv('hs_conf_presentacion'));
       if(showConf) hsFieldRow('CONFERENCIA', hv('hs_conf_conferencia'));
@@ -2905,7 +3009,7 @@ document.getElementById('generateHojaServicioBtn').addEventListener('click', asy
       // ----- Luces -----
       hsHeaderRow('LUCES');
       if(miercoles) hsFieldRow('INDICACIONES ILUMINACIÓN ENTREVISTA', HS_DEFAULTS.indicacionesIlumEntrevista);
-      if(showConcierto) hsFieldRow(miercoles ? 'INDICACIONES ILUMINACIÓN CONCIERTO' : 'ILUMINACIÓN CONCIERTO', hv('hs_iluminacion_concierto'));
+      if(showConcierto) hsFieldRow(miercoles ? 'INDICACIONES ILUMINACIÓN CONCIERTO' : 'ILUMINACIÓN CONCIERTO', ilumTexto);
       if(showConf) hsFieldRow('INDICACIONES ILUMINACIÓN', hv('hs_ilum_conf'));
       if(showConcierto) hsFieldRow('PARTITURAS', hv('hs_partituras'));
       if(showConf) hsFieldRow('OTRAS INDICACIONES', hv('hs_otras_indicaciones_luces'));
@@ -2913,9 +3017,9 @@ document.getElementById('generateHojaServicioBtn').addEventListener('click', asy
 
       // ----- Retransmisión -----
       hsHeaderRow('RETRANSMISIÓN');
-      hsFieldRow('SALÓN AZUL', hv('hs_salon_azul'), {dropdown:true});
-      hsFieldRow('CAFETERÍA', hv('hs_cafeteria'));
-      hsFieldRow('STREAMING', hv('hs_streaming'), {dropdown:true});
+      hsFieldRow('SALÓN AZUL', val('retransSalonAzul'));
+      hsFieldRow('CAFETERÍA', val('retransCafeteria'));
+      hsFieldRow('STREAMING', val('retransStreaming'));
 
       // ----- Otros -----
       hsHeaderRow('OTROS');
@@ -2956,12 +3060,12 @@ const HS_FIELD_IDS = [
   'hs_hora','hs_coordinador_dpto','hs_programa_link',
   'hs_entrevista','hs_lugar_entrevista','hs_microfonia_entrevista',
   'hs_entrada_publico','hs_durante_entrevista_azul',
-  'hs_proyeccion_sala_rotulacion','hs_conf_presentacion','hs_conf_conferencia','hs_videos','hs_audios','hs_otras_proyecciones','hs_avisos',
+  'hs_conf_presentacion','hs_conf_conferencia','hs_videos','hs_audios','hs_otras_proyecciones','hs_avisos',
   'hs_camara_extra','hs_montaje_video','hs_backup',
   'hs_locutor','hs_rider_microfonia','hs_intervenciones_habladas','hs_microfonia_conf','hs_montaje_sonido','hs_subida_audio',
-  'hs_iluminacion_concierto','hs_ilum_conf','hs_otras_indicaciones_luces','hs_partituras','hs_luz_sala',
-  'hs_salon_azul','hs_streaming','hs_cafeteria',
-  'hs_obs_programa','hs_obs_otras','hs_videos_referencia','hs_materiales_link','hs_materiales_ruta','hs_ruta_preservacion'
+  'hs_ilum_conf','hs_otras_indicaciones_luces','hs_partituras','hs_luz_sala',
+  'hs_obs_programa','hs_obs_otras','hs_videos_referencia','hs_materiales_link','hs_materiales_ruta','hs_ruta_preservacion',
+  'ilumIndicaciones','retransStreaming','retransSalonAzul','retransCafeteria'
 ];
 
 /* ---------- Inicio: tipo de acto por defecto (conciertos) ---------- */
