@@ -2549,6 +2549,7 @@ Si hay cafetería lo prepara mantenimiento en el momento pero debe estar chequea
   materialesLink: 'https://www.dropbox.com/sh/bu0unubfimwil19/AAC-1kkekAb4CWgXgjUNehG7a?dl=0',
   rutaPreservacion: `Media/preservacion/Actos/Videos creamos carpeta con la fecha del acto (AAAA-MM-DD) y metemos dentro Rec5 y zip con materiales (rótulos, ppt, imágenes, etc.)
 **Revisamos posteriormente que la grabación se ha copiado debidamente en media. Marcamos _R después de la fecha en la carpeta del acto preservado.**`,
+  microfoniaEntrevista: 'Sennheiser MD421 para entrevistador y entrevistados',
   locutorMiercoles: 'SI, desde cuarto de RNE',
   locutorOtros: 'SI, desde cabina de traducción en control',
   montajeSonidoMiercoles: 'montaje sonido a cargo de técnicos RNE, apoyo con nuestra microfonía para nuestra grabación si lo consideramos necesario'
@@ -2651,6 +2652,7 @@ function applyFormatoDefaults(){
     forceSet('hs_entrada_publico', m ? HS_DEFAULTS.entradaPublicoMiercoles : HS_DEFAULTS.entradaPublicoOtros);
     forceSet('hs_durante_entrevista_azul', m ? HS_DEFAULTS.duranteEntrevistaAzul : '');
     if(m) forceSet('hs_lugar_entrevista', 'SALÓN AZUL');
+    if(m) fillIfEmpty('hs_microfonia_entrevista', HS_DEFAULTS.microfoniaEntrevista);
   }
 }
 cycleSelect.addEventListener('change', applyFormatoDefaults);
@@ -3018,7 +3020,7 @@ document.getElementById('generateHojaServicioBtn').addEventListener('click', asy
       // ----- Retransmisión -----
       hsHeaderRow('RETRANSMISIÓN');
       hsFieldRow('SALÓN AZUL', val('retransSalonAzul'));
-      hsFieldRow('CAFETERÍA', val('retransCafeteria'));
+      hsFieldRow('CAFETERÍA', val('retransCafeteria') === 'POSIBLE' ? `POSIBLE\n${HS_DEFAULTS.cafeteria}` : val('retransCafeteria'));
       hsFieldRow('STREAMING', val('retransStreaming'));
 
       // ----- Otros -----
